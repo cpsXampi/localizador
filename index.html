@@ -510,59 +510,116 @@ function findCol(h,cs){const m=h.map(norm);for(const c of cs){const i=m.indexOf(
 function vibrate(ms){try{navigator.vibrate?.(ms)}catch{}}
 
 const municipioCache = new Map();
+const municipioPending = new Map();
 
-async function fetchJson(url, headers = {}) {
-  const res = await fetch(url, {
-    headers: {
-      Accept: 'application/json',
-      'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-      ...headers
-    }
-  });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return res.json();
-}
-
-function normalizeMunicipio(value) {
+function readableMunicipio(value) {
   const raw = String(value || '').trim();
   if (!raw) return '';
-  const cleaned = raw.replace(/\s*[-–—].*$/, '').trim();
+  const cleaned = raw
+    .replace(/\s*[-–—].*$/, '')
+    .replace(/\s+\(.+\)$/, '')
+    .replace(/\b(?:municipio|município|cidade|city|town|village|bairro)\b/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
   return cleaned || raw;
+}
+
+function extractMunicipioFromReverseData(data) {
+  if (!data) return '';
+  const address = data.address || {};
+  const candidates = [
+    address.municipality,
+    address.city,
+    address.town,
+    address.village,
+    address.locality,
+    address.suburb,
+    address.county,
+    data.locality,
+    data.city,
+    data.name,
+    data.display_name
+  ];
+  for (const c of candidates) {
+    const v = readableMunicipio(c);
+    if (v) return v;
+  }
+  return '';
+}
+
+async function fetchJson(url, headers = {}, timeoutMs = 7000) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+        ...headers
+      },
+      signal: controller.signal
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 async function resolveMunicipio(lat, lon) {
   if (!Number.isFinite(lat) || !Number.isFinite(lon)) return 'Município não disponível';
   const key = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
   if (municipioCache.has(key)) return municipioCache.get(key);
+  if (municipioPending.has(key)) return municipioPending.get(key);
 
-  const providers = [
-    async () => {
-      const data = await fetchJson(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&localityLanguage=pt`);
-      return normalizeMunicipio(data?.locality || data?.city || data?.principalSubdivision || data?.countryName || '');
-    },
-    async () => {
-      const data = await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1&accept-language=pt-BR`);
-      return normalizeMunicipio(data?.address?.municipality || data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || data?.address?.state || '');
-    },
-    async () => {
-      const data = await fetchJson(`https://geocode.maps.co/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
-      return normalizeMunicipio(data?.address?.city || data?.address?.town || data?.address?.municipality || data?.address?.county || data?.address?.state || data?.address?.road || '');
-    }
-  ];
+  const run = async () => {
+    const providers = [
+      async () => {
+        const data = await fetchJson(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&localityLanguage=pt`);
+        const municipio = extractMunicipioFromReverseData(data);
+        if (municipio) return municipio;
+        throw new Error('BigDataCloud sem município');
+      },
+      async () => {
+        const data = await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1&accept-language=pt-BR`);
+        const municipio = extractMunicipioFromReverseData(data);
+        if (municipio) return municipio;
+        throw new Error('Nominatim sem município');
+      },
+      async () => {
+        const data = await fetchJson(`https://geocode.maps.co/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
+        const municipio = extractMunicipioFromReverseData(data);
+        if (municipio) return municipio;
+        throw new Error('Maps.co sem município');
+      }
+    ];
 
-  for (const provider of providers) {
-    try {
-      const nome = await provider();
-      if (nome) {
+    for (const provider of providers) {
+      try {
+        const nome = await provider();
         municipioCache.set(key, nome);
         return nome;
-      }
-    } catch (e) {}
-  }
+      } catch (e) {}
+    }
 
-  const fallback = 'Município não disponível';
-  municipioCache.set(key, fallback);
-  return fallback;
+    const fallback = 'Município não disponível';
+    municipioCache.set(key, fallback);
+    return fallback;
+  };
+
+  const promise = run();
+  municipioPending.set(key, promise);
+  try {
+    return await promise;
+  } finally {
+    municipioPending.delete(key);
+  }
+}
+
+function setMunicipioLabel(el, value) {
+  if (!el) return;
+  const txt = value ? `Município: ${value}` : 'Município: não disponível';
+  el.textContent = txt;
 }
 
 function hydrateMunicipioTargets() {
@@ -570,18 +627,19 @@ function hydrateMunicipioTargets() {
     const lat = Number(el.dataset.muniLat);
     const lon = Number(el.dataset.muniLon);
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-      el.textContent = 'Município: não disponível';
+      setMunicipioLabel(el, 'não disponível');
       return;
     }
 
     const key = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
     if (municipioCache.has(key)) {
-      el.textContent = `Município: ${municipioCache.get(key)}`;
+      setMunicipioLabel(el, municipioCache.get(key));
       return;
     }
 
+    setMunicipioLabel(el, 'consultando...');
     const nome = await resolveMunicipio(lat, lon);
-    el.textContent = `Município: ${nome}`;
+    setMunicipioLabel(el, nome);
   });
 }
 
@@ -762,7 +820,7 @@ function renderSearch(){
         <p class="post-id">OS / ID: <span>${searchItem.id}</span></p>
         <p class="post-dist" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p>
         <p class="post-dist" id="srch-dist">${dt}</p>
-        <p class="post-muni" data-muni-lat="${searchItem.lat}" data-muni-lon="${searchItem.lon}">Município: carregando...</p>
+        <p class="post-muni" data-muni-lat="${searchItem.lat}" data-muni-lon="${searchItem.lon}">Município: consultando...</p>
         <p class="post-coords">Coordenadas: ${searchItem.lat.toFixed(6)}, ${searchItem.lon.toFixed(6)}</p>
       </div>
       <button class="post-wa-btn" onclick="sendSingleWhatsApp('${searchItem.id}', ${searchItem.lat}, ${searchItem.lon})" title="Enviar este item por WhatsApp">
@@ -874,7 +932,7 @@ function renderSearchKm(){
             <p class="post-id">#${idx+1} - ID: <span>${item.id}</span></p>
             <p class="post-dist" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p>
             <p class="post-dist" id="srch-km-dist-${idx}">${dt}</p>
-            <p class="post-muni" data-muni-lat="${item.lat}" data-muni-lon="${item.lon}">Município: carregando...</p>
+            <p class="post-muni" data-muni-lat="${item.lat}" data-muni-lon="${item.lon}">Município: consultando...</p>
             <p class="post-coords">Coordenadas: ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p>
           </div>
           <button class="post-wa-btn" onclick="sendSingleWhatsApp('${item.id}', ${item.lat}, ${item.lon})" title="Enviar este item por WhatsApp">
@@ -954,7 +1012,7 @@ function renderApoio(){
         <p class="post-id">Poste: <span>${o.id}</span></p>
         <p class="post-dist" id="km-exato-${i}" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p>
         <p class="post-dist" id="dist-${i}">Distância: ${range(o.d,pos.acc)}</p>
-        <p class="post-muni" data-muni-lat="${o.lat}" data-muni-lon="${o.lon}">Município: carregando...</p>
+        <p class="post-muni" data-muni-lat="${o.lat}" data-muni-lon="${o.lon}">Município: consultando...</p>
       </div>
       <button class="post-wa-btn" onclick="sendSingleWhatsApp('${o.id}', ${o.lat}, ${o.lon})" title="Enviar este item por WhatsApp">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
