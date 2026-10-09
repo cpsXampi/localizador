@@ -425,7 +425,7 @@ img,video{display:block;max-width:100%}
       <p class="card-label">Pesquisa por KM (10 mais próximos)</p>
       <div class="search-row">
         <div class="search-wrap">
-          <input class="search-input" id="inputKm" placeholder="EX: 115 ou 115.5" autocomplete="off" spellcheck="false" onkeydown="if(event.key==='Enter')searchKm()">
+          <input class="search-input" id="inputKm" placeholder="EX: 115 ou 115.5" autocomplete="off" spellcheck="false" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" onkeydown="if(event.key==='Enter')searchKm()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
         </div>
         <button class="btn-icon go" onclick="searchKm()" aria-label="Buscar KM"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></button>
