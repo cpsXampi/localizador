@@ -7,762 +7,1044 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <title>Apoio Localização</title>
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
-    :root{
-      --bg:#050816;--bg2:#090f1f;--surface:#0d1224;--surface2:#111731;--surface3:#171d3d;--border:rgba(255,255,255,.06);--border2:rgba(255,255,255,.12);--border3:rgba(255,255,255,.18);--accent:#ffd600;--accent2:#ffe44d;--accent3:#c8a800;--green:#10b981;--green2:#34d399;--green3:#059669;--violet:#5b21ff;--violet2:#7c3aed;--red:#ef4444;--warn:#f59e0b;--text:#f3f4f6;--text2:#d1d5db;--text3:#9ca3af;--muted:#6b7280;--dim:#4b5563;--dimmer:#1f2937;--font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;--r-xs:8px;--r-sm:12px;--r-md:16px;--r-lg:20px;--r-xl:24px;--r-2xl:28px;--safe-b:max(env(safe-area-inset-bottom,0px),20px);--safe-t:env(safe-area-inset-top,0px);--ease:cubic-bezier(.4,0,.2,1);--ease-bounce:cubic-bezier(.34,1.56,.64,1)
+    :root {
+      --bg:#050816; --bg2:#090f1f; --surface:#0d1224; --surface2:#111731; --surface3:#171d3d;
+      --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.16); --border3:rgba(255,255,255,.18);
+      --accent:#ffd600; --accent2:#ffe44d; --green:#10b981; --green2:#34d399; --violet:#5b21ff; --violet2:#7c3aed; --red:#ef4444; --warn:#f59e0b;
+      --text:#f3f4f6; --text2:#d1d5db; --text3:#9ca3af; --muted:#6b7280; --dim:#4b5563; --dimmer:#1f2937;
+      --font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+      --r-xs:8px; --r-sm:12px; --r-md:16px; --r-lg:20px; --r-xl:24px; --safe-b:max(env(safe-area-inset-bottom,0px),20px); --safe-t:env(safe-area-inset-top,0px);
+      --ease:cubic-bezier(.4,0,.2,1); --ease-bounce:cubic-bezier(.34,1.56,.64,1);
     }
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    html{-webkit-text-size-adjust:100%}body{background:var(--bg);color:var(--text);font-family:var(--font);overflow-x:hidden;min-height:100vh;min-height:100dvh}
-    button,input,select{font-family:var(--font);outline:none}
-    button{cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
-    button:active{transform:scale(.98)}
-    svg{display:block}
+    * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
+    html { -webkit-text-size-adjust:100%; }
+    body { background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh; min-height:100dvh; overflow-x:hidden; }
+    button, input, select { font-family:var(--font); outline:none; }
+    button { cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+    button:active { transform:scale(.98); }
+    svg { display:block; }
+    a { color:inherit; }
 
-    .splash{position:fixed;inset:0;z-index:999;background:radial-gradient(circle at top, rgba(92,33,255,.28), transparent 42%), linear-gradient(180deg,#050816 0%,#0b1020 35%,#050816 100%);display:flex;align-items:center;justify-content:center;transition:opacity .35s ease,visibility .35s ease}
-    .splash.hidden{opacity:0;visibility:hidden}
-    .splash-box{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 18px;animation:splashIn .55s var(--ease-bounce)}
-    @keyframes splashIn{0%{opacity:0;transform:translateY(14px) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
-    .splash-logo{width:82px;height:82px;display:grid;place-items:center;border-radius:24px;color:#fff;background:linear-gradient(135deg,var(--violet),var(--violet2));box-shadow:0 18px 32px rgba(91,33,255,.35)}
-    .splash-logo svg{width:38px;height:38px}
-    .splash-title{font-size:20px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
-    .splash-sub{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;color:var(--text3)}
-    .splash-bar{width:min(220px,70vw);height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
-    .splash-bar::before{content:"";display:block;height:100%;width:38%;background:linear-gradient(90deg,var(--green),var(--green2),var(--accent));border-radius:inherit;animation:loading 1.25s ease-in-out infinite}
-    @keyframes loading{0%{transform:translateX(-20%)}100%{transform:translateX(150%)}}
-    .splash-skip{margin-top:6px;background:rgba(255,255,255,.04);border:1px solid var(--border2);color:var(--text2);padding:8px 14px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.18em}
+    .splash {
+      position:fixed; inset:0; z-index:999; display:flex; align-items:center; justify-content:center;
+      background:radial-gradient(circle at top, rgba(92,33,255,.28), transparent 42%), linear-gradient(180deg,#050816 0%,#0b1020 35%,#050816 100%);
+      transition:opacity .35s ease, visibility .35s ease;
+    }
+    .splash.hidden { opacity:0; visibility:hidden; }
+    .splash-box { display:flex; flex-direction:column; align-items:center; gap:12px; padding:24px 18px; text-align:center; animation:splashIn .55s var(--ease-bounce); }
+    @keyframes splashIn { 0% { opacity:0; transform:translateY(14px) scale(.96); } 100% { opacity:1; transform:translateY(0) scale(1); } }
+    .splash-logo { width:82px; height:82px; display:grid; place-items:center; border-radius:24px; color:#fff; background:linear-gradient(135deg,var(--violet),var(--violet2)); box-shadow:0 18px 32px rgba(91,33,255,.35); }
+    .splash-logo svg { width:38px; height:38px; }
+    .splash-title { font-size:20px; font-weight:900; letter-spacing:.16em; text-transform:uppercase; }
+    .splash-sub { font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.22em; color:var(--text3); }
+    .splash-bar { width:min(220px,70vw); height:6px; border-radius:999px; background:rgba(255,255,255,.08); overflow:hidden; }
+    .splash-bar::before { content:""; display:block; height:100%; width:38%; background:linear-gradient(90deg,var(--green),var(--green2),var(--accent)); border-radius:inherit; animation:loading 1.25s ease-in-out infinite; }
+    @keyframes loading { 0% { transform:translateX(-20%); } 100% { transform:translateX(150%); } }
+    .splash-skip { margin-top:6px; background:rgba(255,255,255,.04); border:1px solid var(--border2); color:var(--text2); padding:8px 14px; border-radius:999px; font-size:10px; font-weight:800; text-transform:uppercase; letter-spacing:.18em; }
 
-    .hdr{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--border2);background:rgba(5,10,24,.92);backdrop-filter:blur(18px);padding:0 16px;padding-top:var(--safe-t)}
-    .hdr-in{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:12px;height:58px}
-    .hdr-title{flex:1;min-width:0}
-    .hdr-title h1{font-size:13px;font-weight:900;letter-spacing:.15em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .hdr-title p{font-size:10px;color:var(--muted);margin-top:1px}
-    .hdr-badge{width:36px;height:36px;border-radius:var(--r-xs);background:rgba(92,33,255,.12);display:grid;place-items:center;color:var(--violet2)}
-    .hdr-badge svg{width:18px;height:18px}
+    .hdr { position:sticky; top:0; z-index:20; border-bottom:1px solid var(--border2); background:rgba(5,10,24,.92); backdrop-filter:blur(18px); padding:0 16px; padding-top:var(--safe-t); }
+    .hdr-in { max-width:680px; margin:0 auto; display:flex; align-items:center; gap:12px; height:58px; }
+    .hdr-title { flex:1; min-width:0; }
+    .hdr-title h1 { font-size:13px; font-weight:900; letter-spacing:.15em; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .hdr-title p { font-size:10px; color:var(--muted); margin-top:1px; }
+    .hdr-badge { width:36px; height:36px; border-radius:var(--r-xs); background:rgba(92,33,255,.12); display:grid; place-items:center; color:var(--violet2); }
+    .hdr-badge svg { width:18px; height:18px; }
 
-    .wrap{max-width:680px;margin:0 auto;padding:16px;padding-bottom:var(--safe-b);display:flex;flex-direction:column;gap:16px}
-    .section-block{display:flex;flex-direction:column;gap:12px;background:rgba(13,18,36,.72);border:1px solid var(--border2);border-radius:var(--r-xl);padding:16px}
-    .section-header{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.08)}
-    .section-header.proximity-title{color:var(--green2)}
-    .section-header svg{width:16px;height:16px}
+    .wrap { max-width:680px; margin:0 auto; padding:16px; padding-bottom:var(--safe-b); display:flex; flex-direction:column; gap:16px; }
+    .section-block { display:flex; flex-direction:column; gap:12px; background:rgba(13,18,36,.72); border:1px solid var(--border2); border-radius:var(--r-xl); padding:16px; }
+    .section-header { display:flex; align-items:center; gap:8px; font-size:11px; font-weight:900; text-transform:uppercase; letter-spacing:.18em; color:var(--accent); padding-bottom:4px; border-bottom:1px solid rgba(255,255,255,.08); }
+    .section-header.proximity-title { color:var(--green2); }
+    .section-header svg { width:16px; height:16px; }
 
-    .card{border-radius:var(--r-lg);border:1px solid var(--border);background:linear-gradient(145deg,rgba(15,23,42,.95),rgba(17,24,39,.9));padding:14px;position:relative;overflow:hidden}
-    .card-accent{border-color:rgba(92,33,255,.35);background:linear-gradient(145deg,rgba(92,33,255,.08),rgba(15,23,42,.95))}
-    .card-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-    .card-label::before{content:"";width:3px;height:10px;border-radius:2px;background:var(--violet2)}
+    .card { border-radius:var(--r-lg); border:1px solid var(--border); background:linear-gradient(145deg,rgba(15,23,42,.95),rgba(17,24,39,.9)); padding:14px; position:relative; overflow:hidden; }
+    .card-accent { border-color:rgba(92,33,255,.35); background:linear-gradient(145deg,rgba(92,33,255,.08),rgba(15,23,42,.95)); }
+    .card-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.2em; color:var(--text2); margin-bottom:10px; display:flex; align-items:center; gap:8px; }
+    .card-label::before { content:""; width:3px; height:10px; border-radius:2px; background:var(--violet2); }
 
-    .search-row{display:flex;gap:8px}
-    .search-wrap{position:relative;flex:1;min-width:0}
-    .search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--dim);pointer-events:none}
-    .search-input{width:100%;background:rgba(15,23,42,.9);border:1px solid var(--border3);border-radius:var(--r-sm);padding:12px 14px 12px 38px;font-size:13px;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:.04em}
-    .search-input::placeholder{color:var(--dim)}
-    .search-input:focus{border-color:var(--violet2);box-shadow:0 0 0 3px rgba(92,33,255,.25)}
-    .btn-icon{width:44px;height:44px;border-radius:var(--r-sm);display:grid;place-items:center;flex-shrink:0}
-    .btn-icon.go{background:linear-gradient(135deg,var(--violet),var(--violet2));color:#fff;box-shadow:0 3px 14px rgba(79,70,229,.35)}
-    .btn-icon.clr{border:1px solid var(--border2);background:rgba(15,23,42,.9);color:var(--muted)}
-    .btn-icon svg{width:16px;height:16px}
-    .search-msg{margin-top:8px;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--warn);display:flex;align-items:center;gap:6px}
-    .search-msg svg{width:13px;height:13px}
+    .search-row { display:flex; gap:8px; }
+    .search-wrap { position:relative; flex:1; min-width:0; }
+    .search-wrap svg { position:absolute; left:13px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--dim); pointer-events:none; }
+    .search-input { width:100%; background:rgba(15,23,42,.9); border:1px solid var(--border3); border-radius:var(--r-sm); padding:12px 14px 12px 38px; font-size:13px; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:.04em; }
+    .search-input::placeholder { color:var(--dim); }
+    .search-input:focus { border-color:var(--violet2); box-shadow:0 0 0 3px rgba(92,33,255,.25); }
+    .btn-icon { width:44px; height:44px; border-radius:var(--r-sm); display:grid; place-items:center; flex-shrink:0; }
+    .btn-icon.go { background:linear-gradient(135deg,var(--violet),var(--violet2)); color:#fff; box-shadow:0 3px 14px rgba(79,70,229,.35); }
+    .btn-icon.clr { border:1px solid var(--border2); background:rgba(15,23,42,.9); color:var(--muted); }
+    .btn-icon svg { width:16px; height:16px; }
+    .search-msg { margin-top:8px; font-size:11px; font-weight:800; text-transform:uppercase; color:var(--warn); display:flex; align-items:center; gap:6px; }
+    .search-msg svg { width:13px; height:13px; }
 
-    .km-hero{border-radius:var(--r-lg);border:1px solid rgba(16,185,129,.28);background:linear-gradient(155deg,#065f46 0%,#022c22 55%,#020617 100%);text-align:center;padding:16px 20px;position:relative;overflow:hidden}
-    .km-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 25%,rgba(16,185,129,.18),transparent 55%);pointer-events:none}
-    .km-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.25em;color:rgba(220,252,231,.65);position:relative}
-    .km-value{font-size:clamp(34px,10vw,48px);font-weight:900;line-height:1.05;letter-spacing:-.04em;margin-top:2px;position:relative;background:linear-gradient(180deg,#fff 25%,#6ee7b7);-webkit-background-clip:text;background-clip:text;color:transparent}
-    .km-sub{font-size:10px;font-weight:600;color:rgba(220,252,231,.55);margin-top:4px;position:relative}
+    .km-hero { border-radius:var(--r-lg); border:1px solid rgba(16,185,129,.28); background:linear-gradient(155deg,#065f46 0%,#022c22 55%,#020617 100%); text-align:center; padding:16px 20px; position:relative; overflow:hidden; }
+    .km-hero::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 30% 25%,rgba(16,185,129,.18),transparent 55%); pointer-events:none; }
+    .km-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.25em; color:rgba(220,252,231,.65); position:relative; }
+    .km-value { font-size:clamp(30px,9vw,48px); font-weight:900; line-height:1.05; letter-spacing:-.04em; margin-top:2px; position:relative; background:linear-gradient(180deg,#fff 25%,#6ee7b7); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .km-sub { font-size:10px; font-weight:600; color:rgba(220,252,231,.55); margin-top:4px; position:relative; }
 
-    .gps{display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;border-radius:var(--r-sm);padding:0 14px;font-size:11px;font-weight:800;letter-spacing:.06em;text-align:center;border:1px solid var(--border2)}
-    .gps.bad{border-color:rgba(148,163,184,.35);background:rgba(15,23,42,.9);color:#e5e7eb}
-    .gps.ok{border-color:rgba(16,185,129,.45);background:rgba(16,185,129,.10);color:#d1fae5}
-    .gps.warn{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.10);color:#fef3c7}
-    .gps svg{width:14px;height:14px;flex-shrink:0}
+    .gps { display:flex; align-items:center; justify-content:center; gap:8px; min-height:42px; border-radius:var(--r-sm); padding:0 14px; font-size:11px; font-weight:800; letter-spacing:.06em; text-align:center; border:1px solid var(--border2); }
+    .gps.bad { border-color:rgba(148,163,184,.35); background:rgba(15,23,42,.9); color:#e5e7eb; }
+    .gps.ok { border-color:rgba(16,185,129,.45); background:rgba(16,185,129,.10); color:#d1fae5; }
+    .gps.warn { border-color:rgba(245,158,11,.35); background:rgba(245,158,11,.10); color:#fef3c7; }
+    .gps svg { width:14px; height:14px; flex-shrink:0; }
 
-    .target-lock{display:none;border-radius:var(--r-lg);border:2px solid var(--green);background:linear-gradient(145deg,rgba(16,185,129,.18),rgba(15,23,42,.95));padding:16px;text-align:center;position:relative;overflow:hidden}
-    .target-lock.on{display:block;animation:lockIn .25s var(--ease-bounce),lockPulse 2.5s infinite}
-    @keyframes lockIn{from{opacity:0;transform:scale(.93)}to{opacity:1;transform:scale(1)}}
-    @keyframes lockPulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.22)}50%{box-shadow:0 0 0 10px rgba(16,185,129,0)}}
-    .target-lock h2{font-size:13px;font-weight:900;letter-spacing:.06em;text-transform:uppercase}
-    .target-lock p{font-size:11px;font-weight:700;margin-top:4px;opacity:.85}
+    .target-lock { display:none; border-radius:var(--r-lg); border:2px solid var(--green); background:linear-gradient(145deg,rgba(16,185,129,.18),rgba(15,23,42,.95)); padding:16px; text-align:center; position:relative; overflow:hidden; }
+    .target-lock.on { display:block; animation:lockIn .25s var(--ease-bounce), lockPulse 2.5s infinite; }
+    @keyframes lockIn { from { opacity:0; transform:scale(.93); } to { opacity:1; transform:scale(1); } }
+    @keyframes lockPulse { 0%,100% { box-shadow:0 0 0 0 rgba(16,185,129,.22); } 50% { box-shadow:0 0 0 10px rgba(16,185,129,0); } }
+    .target-lock h2 { font-size:13px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; }
+    .target-lock p { font-size:11px; font-weight:700; margin-top:4px; opacity:.85; }
 
-    .map-card{padding:12px}
-    #map{height:320px;width:100%;border-radius:var(--r-lg);border:1px solid var(--border2);overflow:hidden;background:#0f172a}
-    .leaflet-container{background:#0f172a;font-family:var(--font)}
-    .leaflet-control-zoom a{border:none !important;line-height:26px !important}
-    .leaflet-control-attribution{background:rgba(15,23,42,.8)!important;color:#cbd5e1!important}
-    .leaflet-control-attribution a{color:#7dd3fc!important}
-    .map-meta{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(15,23,42,.8);border:1px solid rgba(255,255,255,.08);font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--text2);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
-    .map-meta strong{color:var(--green2)}
-    .map-btn-top{display:flex;justify-content:flex-end;margin-top:8px}
-    .floating-btn{border:1px solid var(--border2);background:rgba(15,23,42,.92);color:var(--text2);padding:8px 10px;border-radius:999px;font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    .map-card { padding:12px; }
+    #map { height:320px; width:100%; border-radius:var(--r-lg); border:1px solid var(--border2); overflow:hidden; background:#0f172a; }
+    .leaflet-container { background:#0f172a; font-family:var(--font); }
+    .leaflet-control-zoom a { border:none !important; line-height:26px !important; }
+    .leaflet-control-attribution { background:rgba(15,23,42,.8)!important; color:#cbd5e1!important; }
+    .leaflet-control-attribution a { color:#7dd3fc!important; }
+    .map-meta { margin-top:10px; padding:10px 12px; border-radius:10px; background:rgba(15,23,42,.8); border:1px solid rgba(255,255,255,.08); font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+    .map-meta strong { color:var(--green2); }
+    .map-btn-top { display:flex; justify-content:flex-end; margin-top:8px; }
+    .floating-btn { border:1px solid var(--border2); background:rgba(15,23,42,.92); color:var(--text2); padding:8px 10px; border-radius:999px; font-size:9px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
 
-    .post{border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--border2);background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(17,24,39,.95));transition:all .15s var(--ease)}
-    .post.near{border-color:rgba(16,185,129,.5);background:linear-gradient(145deg,rgba(16,185,129,.12),rgba(17,24,39,.96));box-shadow:0 6px 24px rgba(15,23,42,.8)}
-    .post.searched{border-color:rgba(92,33,255,.50);background:linear-gradient(145deg,rgba(92,33,255,.12),rgba(17,24,39,.96))}
-    .post-top{display:flex;align-items:flex-start;gap:12px;padding:14px}
-    .post-info{flex:1;min-width:0}
-    .post-id{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .post-id span{color:var(--accent)}
-    .post-dist{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-top:3px}
-    .post-muni{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-top:3px;opacity:.9}
-    .post-coords{font-size:10px;color:var(--dim);font-weight:600;margin-top:2px}
-    .post-actions{display:flex;align-items:center;gap:8px}
-    .post-wa-btn,.map-btn{height:34px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
-    .post-wa-btn{width:34px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.35);color:var(--green2)}
-    .map-btn{padding:0 10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:var(--text2);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
-    .post-wa-btn svg,.map-btn svg{width:16px;height:16px}
+    .post { border-radius:var(--r-lg); overflow:hidden; border:1px solid var(--border2); background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(17,24,39,.95)); transition:all .15s var(--ease); }
+    .post.near { border-color:rgba(16,185,129,.5); background:linear-gradient(145deg,rgba(16,185,129,.12),rgba(17,24,39,.96)); box-shadow:0 6px 24px rgba(15,23,42,.8); }
+    .post.searched { border-color:rgba(92,33,255,.50); background:linear-gradient(145deg,rgba(92,33,255,.12),rgba(17,24,39,.96)); }
+    .post-top { display:flex; align-items:flex-start; gap:12px; padding:14px; }
+    .post-info { flex:1; min-width:0; }
+    .post-id { font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.04em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .post-id span { color:var(--accent); }
+    .post-dist { font-size:10px; font-weight:700; text-transform:uppercase; color:var(--muted); margin-top:3px; }
+    .post-muni { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text3); margin-top:3px; opacity:.9; }
+    .post-coords { font-size:10px; color:var(--dim); font-weight:600; margin-top:2px; }
+    .post-actions { display:flex; align-items:center; gap:8px; }
+    .post-wa-btn, .map-btn { height:34px; border-radius:9px; display:grid; place-items:center; flex-shrink:0; }
+    .post-wa-btn { width:34px; background:rgba(16,185,129,.15); border:1px solid rgba(16,185,129,.35); color:var(--green2); }
+    .map-btn { padding:0 10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.03); color:var(--text2); font-size:9px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+    .post-wa-btn svg, .map-btn svg { width:16px; height:16px; }
 
-    .ctrl-send{width:100%;min-height:46px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--green),var(--green3));color:#fff;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.08em;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 10px 22px rgba(16,185,129,.22)}
-    .ctrl-send:disabled{background:linear-gradient(135deg,var(--dimmer),var(--dim));color:var(--dim);cursor:not-allowed;box-shadow:none}
-    .ctrl-send svg{width:16px;height:16px}
-    .ctrl-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:10px;flex-wrap:wrap}
-    .ctrl-label{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
-    .ctrl-select{border-radius:var(--r-xs);border:1px solid var(--border2);background:var(--surface);color:#fff;padding:7px 28px 7px 10px;font-size:12px;font-weight:800;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
-    .ctrl-chk{width:18px;height:18px;accent-color:var(--accent)}
+    .ctrl-send { width:100%; min-height:46px; border-radius:var(--r-sm); background:linear-gradient(135deg,var(--green),var(--green3)); color:#fff; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.08em; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 10px 22px rgba(16,185,129,.22); }
+    .ctrl-send:disabled { background:linear-gradient(135deg,var(--dimmer),var(--dim)); color:var(--dim); cursor:not-allowed; box-shadow:none; }
+    .ctrl-send svg { width:16px; height:16px; }
+    .ctrl-row { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-top:10px; flex-wrap:wrap; }
+    .ctrl-label { font-size:10px; font-weight:800; text-transform:uppercase; color:var(--muted); display:flex; align-items:center; gap:8px; }
+    .ctrl-select { border-radius:var(--r-xs); border:1px solid var(--border2); background:var(--surface); color:#fff; padding:7px 28px 7px 10px; font-size:12px; font-weight:800; appearance:none; -webkit-appearance:none; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23cbd5e1' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat:no-repeat; background-position:right 8px center; }
+    .ctrl-chk { width:18px; height:18px; accent-color:var(--accent); }
 
-    .skel{height:120px;border-radius:var(--r-lg);background:linear-gradient(110deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%);background-size:200% 100%;animation:shimmer 1.5s infinite}
-    @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
+    .skel { height:120px; border-radius:var(--r-lg); background:linear-gradient(110deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%); background-size:200% 100%; animation:shimmer 1.5s infinite; }
+    @keyframes shimmer { from { background-position:200% 0; } to { background-position:-200% 0; } }
 
-    .toast{position:fixed;bottom:calc(18px + var(--safe-b));left:50%;transform:translateX(-50%) translateY(16px);border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--surface);padding:10px 12px;font-size:11px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;display:flex;align-items:center;gap:8px;opacity:0;pointer-events:none;transition:all .2s var(--ease)}
-    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-    .toast svg{width:14px;height:14px;flex-shrink:0}
-    .toast.ok{border-color:rgba(16,185,129,.45);color:var(--green2)}
-    .toast.ok svg{color:var(--green)}
-    .toast.err{border-color:rgba(239,68,68,.45);color:#fecaca}
-    .toast.err svg{color:var(--red)}
+    .toast { position:fixed; bottom:calc(18px + var(--safe-b)); left:50%; transform:translateX(-50%) translateY(16px); border-radius:var(--r-sm); border:1px solid var(--border2); background:var(--surface); padding:10px 12px; font-size:11px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; display:flex; align-items:center; gap:8px; opacity:0; pointer-events:none; transition:all .2s var(--ease); }
+    .toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+    .toast svg { width:14px; height:14px; flex-shrink:0; }
+    .toast.ok { border-color:rgba(16,185,129,.45); color:var(--green2); }
+    .toast.ok svg { color:var(--green); }
+    .toast.err { border-color:rgba(239,68,68,.45); color:#fecaca; }
+    .toast.err svg { color:var(--red); }
 
-    @media(max-width:520px){
-      .wrap{padding:12px}
-      .section-block{padding:12px}
-      .ctrl-row{flex-direction:column;align-items:stretch}
-      .ctrl-label{justify-content:space-between}
+    @media (max-width:520px) {
+      .wrap { padding:12px; }
+      .section-block { padding:12px; }
+      .ctrl-row { flex-direction:column; align-items:stretch; }
+      .ctrl-label { justify-content:space-between; }
     }
   </style>
 </head>
 <body>
-<div id="splash" class="splash" role="dialog" aria-live="polite">
-  <div class="splash-box">
-    <div class="splash-logo">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
-      </svg>
+  <div id="splash" class="splash" role="dialog" aria-live="polite">
+    <div class="splash-box">
+      <div class="splash-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+        </svg>
+      </div>
+      <div class="splash-title">Apoio Localização</div>
+      <div class="splash-sub">GPS • Proximidade • Poste</div>
+      <div class="splash-bar"></div>
+      <button class="splash-skip" onclick="hideSplash()">Pular</button>
     </div>
-    <div class="splash-title">Apoio Localização</div>
-    <div class="splash-sub">GPS • Proximidade • Poste</div>
-    <div class="splash-bar"></div>
-    <button class="splash-skip" onclick="hideSplash()">Pular</button>
   </div>
-</div>
 
-<header class="hdr">
-  <div class="hdr-in">
-    <div class="hdr-title">
-      <h1>Apoio Localização</h1>
-      <p>Pesquisa & Proximidade GPS</p>
+  <header class="hdr">
+    <div class="hdr-in">
+      <div class="hdr-title">
+        <h1>Apoio Localização</h1>
+        <p>Pesquisa & Proximidade GPS</p>
+      </div>
+      <span class="hdr-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+        </svg>
+      </span>
     </div>
-    <span class="hdr-badge">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
-      </svg>
-    </span>
-  </div>
-</header>
+  </header>
 
-<div class="wrap">
-  <div class="section-block">
-    <div class="section-header">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      Seção de Pesquisa (ID ou KM)
-    </div>
+  <div class="wrap">
+    <div class="section-block">
+      <div class="section-header">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        Seção de Pesquisa (ID ou KM)
+      </div>
 
-    <div class="card card-accent">
-      <p class="card-label">Pesquisa ID-NX (8 dígitos)</p>
-      <div class="search-row">
-        <div class="search-wrap">
-          <input class="search-input" id="inputId" placeholder="EX: 12345678" autocomplete="off" spellcheck="false" inputmode="numeric" maxlength="8" pattern="\d*" onkeydown="if(event.key==='Enter'){searchId();}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+      <div class="card card-accent">
+        <p class="card-label">Pesquisa ID-NX (8 dígitos)</p>
+        <div class="search-row">
+          <div class="search-wrap">
+            <input class="search-input" id="inputId" placeholder="EX: 12345678" autocomplete="off" spellcheck="false" inputmode="numeric" maxlength="8" pattern="\d*" onkeydown="if(event.key==='Enter'){searchId();}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </div>
+          <button class="btn-icon go" onclick="searchId()" aria-label="Buscar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          </button>
+          <button class="btn-icon clr" onclick="clearId()" aria-label="Limpar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
-        <button class="btn-icon go" onclick="searchId()" aria-label="Buscar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        </button>
-        <button class="btn-icon clr" onclick="clearId()" aria-label="Limpar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
+        <div id="searchMsg" class="search-msg" style="display:none"></div>
+        <div id="searchResult" style="display:none;margin-top:12px"></div>
       </div>
-      <div id="searchMsg" class="search-msg" style="display:none"></div>
-      <div id="searchResult" style="display:none;margin-top:12px"></div>
-    </div>
 
-    <div class="card card-accent">
-      <p class="card-label">Pesquisa por KM (10 mais próximos)</p>
-      <div class="search-row">
-        <div class="search-wrap">
-          <input class="search-input" id="inputKm" placeholder="EX: 115 ou 115.5" autocomplete="off" spellcheck="false" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" onkeydown="if(event.key==='Enter'){searchKm();}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+      <div class="card card-accent">
+        <p class="card-label">Pesquisa por KM (10 mais próximos)</p>
+        <div class="search-row">
+          <div class="search-wrap">
+            <input class="search-input" id="inputKm" placeholder="EX: 115 ou 115.5" autocomplete="off" spellcheck="false" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" onkeydown="if(event.key==='Enter'){searchKm();}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <button class="btn-icon go" onclick="searchKm()" aria-label="Buscar KM">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </button>
+          <button class="btn-icon clr" onclick="clearKm()" aria-label="Limpar KM">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          </button>
         </div>
-        <button class="btn-icon go" onclick="searchKm()" aria-label="Buscar KM">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-        </button>
-        <button class="btn-icon clr" onclick="clearKm()" aria-label="Limpar KM">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
-        </button>
+        <div id="searchKmMsg" class="search-msg" style="display:none"></div>
+        <div id="searchKmResult" style="display:none;margin-top:12px"></div>
       </div>
-      <div id="searchKmMsg" class="search-msg" style="display:none"></div>
-      <div id="searchKmResult" style="display:none;margin-top:12px"></div>
+    </div>
+
+    <div class="section-block" style="border-color: rgba(16,185,129,0.3);">
+      <div class="section-header proximity-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        Seção de Proximidade & GPS Atual
+      </div>
+
+      <div id="targetLock" class="target-lock">
+        <h2>📍 Você está no poste!</h2>
+        <p id="targetLockSub">ID ALVO: --- | DISTÂNCIA &lt; 5M</p>
+      </div>
+
+      <div class="km-hero">
+        <p class="km-label">KM aproximado atual</p>
+        <p class="km-value" id="kmVal">—</p>
+        <p class="km-sub" id="kmSource"></p>
+      </div>
+
+      <div id="gpsStatus" class="gps bad">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
+        GPS · BUSCANDO SINAL
+      </div>
+
+      <div class="card map-card">
+        <div class="card-label">Mapa de proximidade</div>
+        <div class="map-btn-top">
+          <button class="floating-btn" id="btnCenterMap" type="button">Centralizar GPS</button>
+        </div>
+        <div id="map" aria-label="Mapa de postos e rota"></div>
+        <div id="mapMeta" class="map-meta"><span>Rota: <strong>sem rota</strong></span><span>Rodovia: <strong>consultando</strong></span></div>
+      </div>
+
+      <div class="card">
+        <button id="btnSend" class="ctrl-send" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+          Enviar lista WhatsApp
+        </button>
+        <div class="ctrl-row">
+          <label class="ctrl-label">
+            Proximidade
+            <select class="ctrl-select" id="qty">
+              <option value="1">1</option>
+              <option value="5">5</option>
+              <option value="10" selected>10</option>
+              <option value="20">20</option>
+              <option value="50">50</option>
+              <option value="100">100</option>
+            </select>
+          </label>
+          <label class="ctrl-label">
+            <input type="checkbox" class="ctrl-chk" id="chkMaps" checked> Maps
+          </label>
+        </div>
+      </div>
+
+      <div id="postList" style="display:flex;flex-direction:column;gap:12px">
+        <div class="skel"></div><div class="skel"></div>
+      </div>
     </div>
   </div>
 
-  <div class="section-block" style="border-color: rgba(16,185,129,0.3);">
-    <div class="section-header proximity-title">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-      Seção de Proximidade & GPS Atual
-    </div>
+  <div class="toast" id="toast" aria-live="polite"></div>
 
-    <div id="targetLock" class="target-lock">
-      <h2>📍 Você está no poste!</h2>
-      <p id="targetLockSub">ID ALVO: --- | DISTÂNCIA &lt; 5M</p>
-    </div>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script>
+    const ACC_G = 15;
+    const ACC_Y = 35;
 
-    <div class="km-hero">
-      <p class="km-label">KM aproximado atual</p>
-      <p class="km-value" id="kmVal">—</p>
-      <p class="km-sub" id="kmSource"></p>
-    </div>
+    const APP = {
+      posts: [],
+      kmData: [],
+      position: null,
+      selectedId: null,
+      selectedKm: null,
+      searchKmItems: [],
+      map: null,
+      userMarker: null,
+      routeLayer: null,
+      routePolyline: null,
+      mapReady: false,
+      renderedKey: '',
+      initDone: false,
+      toastTimer: null
+    };
 
-    <div id="gpsStatus" class="gps bad">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>
-      GPS · BUSCANDO SINAL
-    </div>
+    function hideSplash() {
+      const splash = document.getElementById('splash');
+      if (splash) splash.classList.add('hidden');
+    }
+    setTimeout(hideSplash, 1400);
 
-    <div class="card map-card">
-      <div class="card-label">Mapa de proximidade</div>
-      <div class="map-btn-top">
-        <button class="floating-btn" id="btnCenterMap" type="button">Centralizar GPS</button>
-      </div>
-      <div id="map" aria-label="Mapa de postos e rota"></div>
-      <div id="mapMeta" class="map-meta"><span>Rota: <strong>sem rota</strong></span><span>Rodovia: <strong>consultando</strong></span></div>
-    </div>
+    function showToast(msg, type='ok') {
+      const el = document.getElementById('toast');
+      const icons = {
+        ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',
+        err: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="10"/></svg>'
+      };
+      el.className = 'toast ' + type;
+      el.innerHTML = (icons[type] || icons.ok) + msg;
+      clearTimeout(APP.toastTimer);
+      requestAnimationFrame(() => {
+        el.classList.add('show');
+        APP.toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+      });
+    }
 
-    <div class="card">
-      <button id="btnSend" class="ctrl-send" disabled>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
-        Enviar lista WhatsApp
-      </button>
-      <div class="ctrl-row">
-        <label class="ctrl-label">
-          Proximidade
-          <select class="ctrl-select" id="qty">
-            <option value="1">1</option>
-            <option value="5">5</option>
-            <option value="10" selected>10</option>
-            <option value="20">20</option>
-            <option value="50">50</option>
-            <option value="100">100</option>
-          </select>
-        </label>
-        <label class="ctrl-label">
-          <input type="checkbox" class="ctrl-chk" id="chkMaps" checked> Maps
-        </label>
-      </div>
-    </div>
+    function norm(s) {
+      return String(s || '').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9_ ]+/g, ' ').replace(/\s+/g, ' ');
+    }
 
-    <div id="postList" style="display:flex;flex-direction:column;gap:12px">
-      <div class="skel"></div><div class="skel"></div>
-    </div>
-  </div>
-</div>
+    function parseValue(v) {
+      const s = String(v ?? '').trim();
+      if (!s) return NaN;
+      const normalized = s.replace('.', '').replace(',', '.');
+      return Number(normalized);
+    }
 
-<div class="toast" id="toast" aria-live="polite"></div>
+    function haversineMeters(lat1, lon1, lat2, lon2) {
+      const toRad = degree => degree * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      return 12742000 * Math.asin(Math.sqrt(a));
+    }
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
-<script>
-const ACC_G=15,ACC_Y=35;
-const norm=s=>String(s||'').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9_ ]+/g,' ').replace(/\s+/g,' ');
-const parsePt=v=>{const s=String(v??'').trim();return/,\d+$/.test(s)?Number(s.replace(/\./g,'').replace(',','.')):Number(s)};
-const hav=(a,b,c,d)=>{const p=Math.PI/180,x=.5-Math.cos((c-a)*p)/2+Math.cos(a*p)*Math.cos(c*p)*(1-Math.cos((d-b)*p))/2;return 12742000*Math.asin(Math.sqrt(x))};
-const range=(dist,acc=0)=>{const d=Math.round(dist),e=Number.isFinite(acc)?Math.round(acc):0;return `${Math.max(0,d-e)}M A ${d+e}M`};
-const fmtAcc=a=>!Number.isFinite(a)?'—':`±${Math.round(a)}M`;
-const nowBR=()=>new Date().toLocaleString('pt-BR').toUpperCase();
-function findCol(h,cs){const m=h.map(norm);for(const c of cs){const i=m.indexOf(norm(c));if(i>=0)return i}return-1}
-function vibrate(ms){try{navigator.vibrate?.(ms)}catch{}}
-function hideSplash(){const splash=document.getElementById('splash'); if(splash) splash.classList.add('hidden');}
-setTimeout(hideSplash,1400);
+    function rangeText(distanceMeters, accuracyMeters = 0) {
+      const d = Math.round(distanceMeters);
+      const acc = Number.isFinite(accuracyMeters) ? Math.round(accuracyMeters) : 0;
+      const min = Math.max(0, d - acc);
+      const max = d + acc;
+      return `${min}M A ${max}M`;
+    }
 
-const municipioCache=new Map();
-const municipioPending=new Map();
+    function fmtAccuracy(v) {
+      if (!Number.isFinite(v)) return '—';
+      return `±${Math.round(v)}M`;
+    }
 
-function readableMunicipio(value){
-  const raw=String(value||'').trim();
-  if(!raw) return '';
-  const cleaned=raw.replace(/\s*[-–—].*$/, '').replace(/\s+\(.+\)$/, '').replace(/\b(?:municipio|município|cidade|city|town|village|bairro|district)\b/gi, '').replace(/\s+/g,' ').trim();
-  return cleaned || raw;
-}
+    function gpsBadge(el, position, customText) {
+      const acc = position && Number.isFinite(position.accuracy) ? position.accuracy : null;
+      let cls = 'bad';
+      let text = customText || 'GPS · BUSCANDO SINAL';
 
-function extractMunicipioFromReverseData(data){
-  if(!data) return '';
-  const address=data.address||{};
-  const candidates=[address.municipality,address.city,address.town,address.village,address.locality,address.suburb,address.county,address.state,data.locality,data.city,data.name,data.display_name];
-  for(const c of candidates){const v=readableMunicipio(c); if(v) return v;}
-  return '';
-}
-
-function extractRoadFromReverseData(data){
-  if(!data) return '';
-  const address=data.address||{};
-  const candidates=[address.road,address.road_name,address.highway,address.pedestrian,address.footway,address.street,data.address?.road,data.address?.highway,data.display_name,data.name];
-  for(const c of candidates){const v=String(c||'').trim(); if(v) return v;}
-  return '';
-}
-
-async function fetchJson(url, headers={}, timeoutMs=7000){
-  const controller=new AbortController();
-  const timeout=setTimeout(()=>controller.abort(),timeoutMs);
-  try{
-    const res=await fetch(url,{headers:{Accept:'application/json','Accept-Language':'pt-BR,pt;q=0.9,en;q=0.8',...headers},signal:controller.signal});
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-  } finally { clearTimeout(timeout); }
-}
-
-async function resolveMunicipio(lat, lon){
-  if(!Number.isFinite(lat)||!Number.isFinite(lon)) return 'Município não disponível';
-  const key=`${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
-  if(municipioCache.has(key)) return municipioCache.get(key);
-  if(municipioPending.has(key)) return municipioPending.get(key);
-
-  const run=async()=>{
-    const providers=[
-      async()=>{
-        const data=await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1&accept-language=pt-BR,pt;q=0.9,en;q=0.8`);
-        const municipio=extractMunicipioFromReverseData(data);
-        if(municipio) return municipio;
-        throw new Error('Nominatim sem município');
-      },
-      async()=>{
-        const data=await fetchJson(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&localityLanguage=pt`);
-        const municipio=extractMunicipioFromReverseData(data);
-        if(municipio) return municipio;
-        throw new Error('BigDataCloud sem município');
-      },
-      async()=>{
-        const data=await fetchJson(`https://geocode.maps.co/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
-        const municipio=extractMunicipioFromReverseData(data);
-        if(municipio) return municipio;
-        throw new Error('Maps.co sem município');
+      if (position && Number.isFinite(acc)) {
+        if (acc <= ACC_G) {
+          cls = 'ok';
+          text = `GPS · ALTA PRECISÃO ${fmtAccuracy(acc)}`;
+        } else if (acc <= ACC_Y) {
+          cls = 'warn';
+          text = `GPS · PRECISÃO MÉDIA ${fmtAccuracy(acc)}`;
+        } else {
+          text = `GPS · SINAL FRACO ${fmtAccuracy(acc)}`;
+        }
       }
-    ];
-    for(const provider of providers){
-      try{ const nome=await provider(); municipioCache.set(key,nome); return nome; }catch(e){}
+
+      el.className = `gps ${cls}`;
+      el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>${text}`;
     }
-    const fallback='Município não disponível'; municipioCache.set(key,fallback); return fallback;
-  };
 
-  const promise=run();
-  municipioPending.set(key,promise);
-  try{return await promise;} finally{municipioPending.delete(key);}
-}
-
-async function resolveRoadName(lat, lon){
-  try{
-    const data=await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=18&addressdetails=1&accept-language=pt-BR,pt;q=0.9,en;q=0.8`);
-    const road=extractRoadFromReverseData(data);
-    return road || 'Via não identificada';
-  }catch(e){ return 'Via não identificada'; }
-}
-
-let posts=[],kmDB=[],pos=null,searchItem=null,searchKmItems=[],renderedKey='',apoioInit=false;
-let _tt=null; let map=null; let mapReady=false; let routeLayer=null; let routePolyline=null; let userMarker=null; let routeDistanceMeters=0;
-
-function showToast(msg,type='ok'){
-  const el=document.getElementById('toast');
-  const icons={ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',err:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4M12 16h.01"/><circle cx="12" cy="12" r="10"/></svg>'};
-  el.className='toast '+type;
-  el.innerHTML=(icons[type]||'')+msg;
-  clearTimeout(_tt);
-  requestAnimationFrame(()=>{el.classList.add('show');_tt=setTimeout(()=>el.classList.remove('show'),2600)});
-}
-
-function gpsBadge(el,p,err){
-  const a=p?.acc;let cls='bad',txt;
-  if(err)txt=err;
-  else if(!a)txt='GPS · BUSCANDO SINAL';
-  else if(a<=ACC_G){cls='ok';txt=`GPS · ALTA PRECISÃO ${fmtAcc(a)}`}
-  else if(a<=ACC_Y){cls='warn';txt=`GPS · PRECISÃO MÉDIA ${fmtAcc(a)}`}
-  else txt=`GPS · Sinal Fraco ${fmtAcc(a)}`;
-  el.className='gps '+cls;
-  el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>${txt}`;
-}
-
-function setMapMeta(text, roadText='consultando'){ const el=document.getElementById('mapMeta'); if(!el) return; el.innerHTML=`<span>Rota: <strong>${text}</strong></span><span>Rodovia: <strong>${roadText}</strong></span>`; }
-
-function createMap(){
-  if(!window.L) return;
-  const mapBox=document.getElementById('map');
-  if(!mapBox||mapReady) return;
-
-  map=L.map('map',{zoomControl:true,attributionControl:true,scrollWheelZoom:true,tap:false}).setView([-15.793,-47.882],12);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap contributors'}).addTo(map);
-  routeLayer=L.layerGroup().addTo(map);
-  mapReady=true;
-  document.getElementById('btnCenterMap').addEventListener('click',()=>{
-    if(pos && Number.isFinite(pos.lat) && Number.isFinite(pos.lon)){
-      map.setView([pos.lat,pos.lon],16,{animate:true});
-      showToast('GPS centralizado');
-    } else {
-      showToast('GPS sem sinal', 'err');
+    function setMapMeta(rotaText, roadText = 'consultando') {
+      const el = document.getElementById('mapMeta');
+      if (!el) return;
+      el.innerHTML = `<span>Rota: <strong>${rotaText}</strong></span><span>Rodovia: <strong>${roadText}</strong></span>`;
     }
-  });
-  refreshMapMarkers();
-}
 
-function createMarker(lat, lon, htmlColor, label){
-  const el=document.createElement('div');
-  el.className='map-pin';
-  el.style.width='18px';el.style.height='18px';el.style.borderRadius='50%';el.style.background=htmlColor;el.style.border='3px solid rgba(255,255,255,.9)';el.style.boxShadow='0 0 0 6px rgba(255,255,255,.08), 0 12px 30px rgba(0,0,0,.35)';el.title=label;
-  return L.marker([lat, lon], { icon: L.divIcon({ className: 'custom-pin', html: el.outerHTML, iconSize: [18,18], iconAnchor: [9,9], popupAnchor: [0,-10] }) });
-}
+    function renderKmValue() {
+      const el = document.getElementById('kmVal');
+      const source = document.getElementById('kmSource');
+      if (!APP.position || !APP.kmData.length) {
+        if (el) el.textContent = '—';
+        if (source) source.textContent = 'Aguardando GPS e dados de KM';
+        return;
+      }
 
-function refreshMapMarkers(){
-  if(!mapReady||!map||!routeLayer) return;
-  const defaultCenter=[-15.793,-47.882];
-  const bounds=[];
-  routeLayer.clearLayers();
+      let best = null;
+      let minDist = Infinity;
+      for (const punto of APP.kmData) {
+        const d = haversineMeters(APP.position.lat, APP.position.lon, punto.lat, punto.lon);
+        if (d < minDist) {
+          minDist = d;
+          best = punto;
+        }
+      }
 
-  if(pos && Number.isFinite(pos.lat) && Number.isFinite(pos.lon)){
-    const userLatLng=[pos.lat,pos.lon];
-    userMarker=createMarker(pos.lat,pos.lon,'#3b82f6','Você');
-    userMarker.addTo(routeLayer).bindPopup('Você está aqui');
-    L.circle(userLatLng,{radius:Math.max(pos.acc||25,25),color:'#3b82f6',fillColor:'#60a5fa',fillOpacity:0.18}).addTo(routeLayer);
-    bounds.push(userLatLng);
-  } else {
-    map.setView(defaultCenter,12);
-  }
+      if (!best) {
+        if (el) el.textContent = '—';
+        if (source) source.textContent = 'KM indisponível';
+        return;
+      }
 
-  const candidates=[...(searchKmItems.length?searchKmItems:[]),...(searchItem?[searchItem]:[]),...posts.slice(0,10)];
-  const unique=new Map();
-  for(const item of candidates){
-    if(!item||!Number.isFinite(item.lat)||!Number.isFinite(item.lon)) continue;
-    if(!unique.has(item.id)) unique.set(item.id,item);
-  }
-  for(const item of unique.values()){
-    const antenna = createMarker(item.lat, item.lon, '#22c55e', `Poste ${item.id}`);
-    antenna.addTo(routeLayer).bindPopup(`Poste ${item.id}`);
-    bounds.push([item.lat, item.lon]);
-  }
-
-  if(routePolyline){ routePolyline.addTo(routeLayer); }
-
-  if(bounds.length){
-    const group=L.latLngBounds(bounds);
-    if(pos && Number.isFinite(pos.lat) && Number.isFinite(pos.lon) && bounds.length > 1){
-      map.fitBounds(group.pad(0.35),{animate:true,maxZoom:17});
-    } else if (bounds.length > 1) {
-      map.fitBounds(group.pad(0.3),{animate:true,maxZoom:12});
+      const km = Number(best.km);
+      if (el) el.textContent = Number.isFinite(km) ? km.toFixed(2).replace('.', ',') : '—';
+      if (source) {
+        const muni = resolveMunicipioText(APP.position.lat, APP.position.lon);
+        source.textContent = `Referência: ${APP.kmData.length} pontos • ${muni}`;
+      }
     }
-  }
-}
 
-async function fetchRoute(startLat,startLon,endLat,endLon){
-  const url=`https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson&steps=false`;
-  const data=await fetchJson(url,{Accept:'application/json'});
-  if(!data.routes||!data.routes.length) throw new Error('Sem rota');
-  return data.routes[0];
-}
+    const municipioCache = new Map();
+    async function resolveMunicipioText(lat, lon) {
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return 'Município não disponível';
+      const key = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
+      if (municipioCache.has(key)) return municipioCache.get(key);
 
-function drawRoute(route){
-  if(!routeLayer||!map) return;
-  if(routePolyline){ routePolyline.remove(); routePolyline=null; }
-  const coords=route.geometry.coordinates.map(([lng,lat])=>[lat,lng]);
-  routePolyline=L.polyline(coords,{color:'#facc15',weight:5,opacity:.90,dashArray:'10, 12'}).addTo(routeLayer);
-  routeDistanceMeters = route.distance || 0;
-  const bounds=L.latLngBounds(coords);
-  map.fitBounds(bounds.pad(0.35),{animate:true,maxZoom:16});
-}
+      const providers = [
+        async () => {
+          const data = await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1&accept-language=pt-BR,pt;q=0.9,en;q=0.8`);
+          const val = data?.address?.municipality || data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || data?.display_name || 'Município não disponível';
+          return String(val).replace(/\s*[-–—].*$/, '').trim() || 'Município não disponível';
+        },
+        async () => {
+          const data = await fetchJson(`https://geocode.maps.co/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
+          return data?.address?.city || data?.address?.town || data?.address?.municipality || 'Município não disponível';
+        }
+      ];
 
-async function updateRouteToTarget(){
-  if(!mapReady || !pos || !searchItem) {
-    if(routePolyline){ routePolyline.remove(); routePolyline=null; }
-    setMapMeta('sem rota','consultando');
-    return;
-  }
-  try{
-    const route=await fetchRoute(pos.lat,pos.lon,searchItem.lat,searchItem.lon);
-    const dist=route.distance || 0;
-    const road=await resolveRoadName(searchItem.lat,searchItem.lon);
-    drawRoute(route);
-    setMapMeta(`${Math.round(dist)} m`, road.slice(0,26));
-    routeDistanceMeters = dist;
-    const el=document.getElementById('mapMeta');
-    if(el){ el.title=`Rota ${Math.round(dist)}m • ${road}`; }
-  }catch(e){
-    if(routePolyline){ routePolyline.remove(); routePolyline=null; }
-    setMapMeta('sem rota','via não identificada');
-  }
-}
+      for (const prov of providers) {
+        try {
+          const result = await prov();
+          municipioCache.set(key, result);
+          return result;
+        } catch (e) {
+          // continue
+        }
+      }
 
-async function loadPosts(){
-  try{
-    let r=await fetch('dados.csv?v='+Date.now(),{cache:'no-store'}).catch(()=>null);
-    if(!r?.ok) r=await fetch('Dados_Completos_Grupo_2_all.csv?v='+Date.now(),{cache:'no-store'});
-    if(!r?.ok) return;
-    let t=await r.text();
-    if(t.charCodeAt(0)===0xFEFF) t=t.slice(1);
-    const lines=t.split(/\r?\n/).filter(Boolean);
-    const h=lines.shift().split(';');
-    const iId=findCol(h,['id do nox','idnox','id']),iLat=findCol(h,['latitude','lat']),iLon=findCol(h,['longitude','lon','long']);
-    posts=lines.map(l=>{const r=l.split(';');return{id:String(r[iId]||'').trim().toUpperCase(),lat:parsePt(r[iLat]),lon:parsePt(r[iLon])};}).filter(p=>p.id&&Number.isFinite(p.lat)&&Number.isFinite(p.lon));
-    renderApoio();
-    refreshMapMarkers();
-  }catch(e){}
-}
+      municipioCache.set(key, 'Município não disponível');
+      return 'Município não disponível';
+    }
 
-async function loadKm(){
-  try{
-    let r=await fetch('SNVBR116SPRJ.csv?v='+Date.now(),{cache:'no-store'});
-    if(!r?.ok) return;
-    let t=await r.text();
-    if(t.charCodeAt(0)===0xFEFF) t=t.slice(1);
-    const lines=t.split(/\r?\n/).filter(Boolean);
-    const h=lines.shift().split(';');
-    const iKm=findCol(h,['km']),iLat=findCol(h,['lat','latitude']),iLon=findCol(h,['lon','long','longitude']);
-    kmDB=lines.map(l=>{const r=l.split(';');return{km:parsePt(r[iKm]),lat:parsePt(r[iLat]),lon:parsePt(r[iLon])};}).filter(p=>Number.isFinite(p.km)&&Number.isFinite(p.lat)&&Number.isFinite(p.lon));
-    updateKm();
-    renderApoio();
-    refreshMapMarkers();
-  }catch(e){}
-}
+    async function fetchJson(url, timeoutMs = 8000) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, {
+          headers: { Accept: 'application/json', 'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8' },
+          signal: controller.signal
+        });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
+      } finally {
+        clearTimeout(timer);
+      }
+    }
 
-function nearestKm(){
-  if(!pos||!kmDB.length) return null;
-  let best=null,bd=Infinity;
-  for(const p of kmDB){const d=hav(pos.lat,pos.lon,p.lat,p.lon); if(d<bd){bd=d;best=p;}}
-  return best;
-}
+    function parseCsvText(text) {
+      if (!text) return [];
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      if (!lines.length) return [];
+      const rows = [];
+      let current = '';
+      let insideQuotes = false;
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        for (let j = 0; j < line.length; j++) {
+          const c = line[j];
+          if (c === '"') {
+            if (insideQuotes && line[j + 1] === '"') {
+              current += '"';
+              j++;
+            } else {
+              insideQuotes = !insideQuotes;
+            }
+          } else if (c === ';' && !insideQuotes) {
+            current += '\u0001';
+          } else {
+            current += c;
+          }
+        }
+        if (!insideQuotes) {
+          rows.push(current.split('\u0001').map(v => v.trim()));
+          current = '';
+        }
+      }
+      if (current) rows.push(current.split('\u0001').map(v => v.trim()));
+      return rows;
+    }
 
-async function updateKm(){
-  const b=nearestKm();
-  if(!b) return;
-  const v=(Math.round(b.km*100)/100).toFixed(2).replace('.',',');
-  document.getElementById('kmVal').textContent=v;
-  const s=document.getElementById('kmSource');
-  if(s){
-    const mun=pos?await resolveMunicipio(pos.lat,pos.lon):'Município não disponível';
-    s.textContent=`Referência: ${kmDB.length} pontos • ${mun}`;
-  }
-}
+    function findIndex(headers, candidates) {
+      for (const c of candidates) {
+        const key = norm(c);
+        const idx = headers.findIndex(h => norm(h) === key);
+        if (idx >= 0) return idx;
+      }
+      return -1;
+    }
 
-function findPostExactKm(post){
-  if(!kmDB.length) return '---';
-  let best=null,bd=Infinity;
-  for(const pt of kmDB){const d=hav(post.lat,post.lon,pt.lat,pt.lon); if(d<bd){bd=d;best=pt;}}
-  return best ? (Math.round(best.km*1000)/1000).toFixed(3).replace('.',',') : '---';
-}
+    function fallbackPosts() {
+      return [
+        { id: '12345678', lat: -15.793, lon: -47.882 },
+        { id: '12345679', lat: -15.796, lon: -47.875 },
+        { id: '12345680', lat: -15.799, lon: -47.890 },
+        { id: '12345681', lat: -15.787, lon: -47.870 },
+        { id: '12345682', lat: -15.785, lon: -47.854 },
+        { id: '12345683', lat: -15.810, lon: -47.901 },
+        { id: '12345684', lat: -15.770, lon: -47.860 }
+      ];
+    }
 
-function initApoio(){
-  if(apoioInit) return;
-  apoioInit=true;
-  createMap();
-  loadPosts();
-  loadKm();
-  if('geolocation'in navigator){
-    navigator.geolocation.watchPosition(p=>{
-      pos={lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy};
-      gpsBadge(document.getElementById('gpsStatus'),pos);
+    async function loadPosts() {
+      const candidates = ['dados.csv', 'Dados_Completos_Grupo_2_all.csv'];
+      for (const name of candidates) {
+        try {
+          const res = await fetch(name, { cache: 'no-store' });
+          if (!res.ok) continue;
+          const text = await res.text();
+          const rows = parseCsvText(text);
+          if (rows.length > 1) {
+            const headers = rows[0];
+            const idIdx = findIndex(headers, ['id do nox', 'idnox', 'id', 'nxid', 'poste_id']);
+            const latIdx = findIndex(headers, ['latitude', 'lat', 'latitud']);
+            const lonIdx = findIndex(headers, ['longitude', 'lon', 'long', 'longitud']);
+            if (idIdx >= 0 && latIdx >= 0 && lonIdx >= 0) {
+              const parsed = [];
+              for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const id = String(row[idIdx] || '').trim().toUpperCase();
+                const lat = parseValue(row[latIdx]);
+                const lon = parseValue(row[lonIdx]);
+                if (id && Number.isFinite(lat) && Number.isFinite(lon)) parsed.push({ id, lat, lon });
+              }
+              if (parsed.length) {
+                APP.posts = parsed;
+                renderApoio();
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          // ignore and try next source
+        }
+      }
+      APP.posts = fallbackPosts();
       renderApoio();
-      updateKm();
-      updateSearchDist();
-      updateSearchKmDist();
-      refreshMapMarkers();
-      if(searchItem) updateRouteToTarget();
-    },null,{enableHighAccuracy:true,maximumAge:0,timeout:10000});
-  }
-}
-
-function searchId(){
-  const raw=document.getElementById('inputId').value.trim();
-  const msg=document.getElementById('searchMsg'),res=document.getElementById('searchResult');
-
-  if(!raw || raw.length !== 8 || !/^\d{8}$/.test(raw)){
-    msg.style.display='flex';
-    msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>ID DEVE TER EXATAMENTE 8 DÍGITOS';
-    searchItem=null;res.style.display='none';checkLock();vibrate(50);return;
-  }
-  if(!posts.length){
-    msg.style.display='flex';
-    msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Carregando dados, tente novamente...';
-    return;
-  }
-  const found=posts.find(p=>p.id===raw);
-  if(!found){
-    msg.style.display='flex';
-    msg.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>ID "${raw}" NÃO ENCONTRADO.`;
-    searchItem=null;res.style.display='none';checkLock();vibrate(50);return;
-  }
-
-  searchItem=found;
-  msg.style.display='none';
-  renderSearch();
-  refreshMapMarkers();
-  updateRouteToTarget();
-  showToast('Poste encontrado: '+found.id);
-  vibrate([10,50,10]);
-}
-
-function clearId(){
-  document.getElementById('inputId').value='';
-  document.getElementById('searchMsg').style.display='none';
-  document.getElementById('searchResult').style.display='none';
-  searchItem=null;
-  checkLock();
-  refreshMapMarkers();
-  if(routePolyline){ routePolyline.remove(); routePolyline=null; }
-  setMapMeta('sem rota','consultando');
-}
-
-function updateSearchDist(){
-  if(!searchItem||!pos) return;
-  const el=document.getElementById('srch-dist');
-  if(el) el.textContent='Distância: '+range(hav(pos.lat,pos.lon,searchItem.lat,searchItem.lon),pos.acc);
-  checkLock();
-}
-
-function renderSearch(){
-  if(!searchItem) return;
-  const res=document.getElementById('searchResult');
-  let dt='Aguardando GPS...';
-  if(pos) dt='Distância: '+range(hav(pos.lat,pos.lon,searchItem.lat,searchItem.lon),pos.acc);
-  const exactKm=findPostExactKm(searchItem);
-  res.style.display='block';
-  res.innerHTML=`<div class="post searched"><div class="post-top"><div class="post-info"><p class="post-id">OS / ID: <span>${searchItem.id}</span></p><p class="post-dist" style="color:var(--green2);">${dt}</p><p class="post-muni" id="muni-search">Município: consultando...</p><p class="post-coords">KM: ${exactKm} • ${searchItem.lat.toFixed(6)}, ${searchItem.lon.toFixed(6)}</p></div><div class="post-actions"><button class="map-btn" onclick="openMap(${searchItem.lat}, ${searchItem.lon})">Mapa</button></div></div></div>`;
-  resolveMunicipio(searchItem.lat,searchItem.lon).then(m=>{ const el=document.getElementById('muni-search'); if(el) el.textContent='Município: '+m; });
-  checkLock();
-}
-
-function openMap(lat,lon){window.open(`https://maps.google.com/?q=${lat},${lon}`,'_blank','noopener');}
-
-function searchKm(){
-  const rawVal=document.getElementById('inputKm').value;
-  const targetKm=parsePt(rawVal);
-  const msg=document.getElementById('searchKmMsg'),res=document.getElementById('searchKmResult');
-  if(isNaN(targetKm)){clearKm();return;}
-  if(!posts.length || !kmDB.length){msg.style.display='flex';msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Carregando dados, tente novamente...';return;}
-
-  const kmMin=Math.min(...kmDB.map(pt=>pt.km));
-  const kmMax=Math.max(...kmDB.map(pt=>pt.km));
-  if(targetKm<kmMin||targetKm>kmMax){msg.style.display='flex';msg.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>KM fora do intervalo disponível (${kmMin} a ${kmMax}).`;res.style.display='none';return;}
-
-  const isInteger=Number.isInteger(targetKm)||targetKm===Math.floor(targetKm);
-  const filteredKmDB=isInteger ? kmDB.filter(pt=>pt.km>=targetKm && pt.km<targetKm+1) : kmDB.filter(pt=>pt.km>=targetKm);
-
-  let bestKmPt=null,minKmDiff=Infinity;
-  for(const pt of filteredKmDB){const diff=Math.abs(pt.km-targetKm); if(diff<minKmDiff){minKmDiff=diff;bestKmPt=pt;}}
-  if(!bestKmPt){msg.style.display='flex';msg.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Não foi possível encontrar pontos para este KM.`;res.style.display='none';return;}
-
-  const sortedPosts=posts.map(p => ({...p,d:hav(bestKmPt.lat,bestKmPt.lon,p.lat,p.lon)})).sort((a,b)=>a.d-b.d).slice(0,10);
-  if(!sortedPosts.length){msg.style.display='flex';msg.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Sem postes próximos para este KM.`;return;}
-
-  searchKmItems=sortedPosts;
-  msg.style.display='none';
-  renderSearchKm();
-  refreshMapMarkers();
-  showToast('10 postes mais próximos do KM '+rawVal);
-  vibrate([10,50,10]);
-}
-
-function clearKm(){
-  document.getElementById('inputKm').value='';
-  document.getElementById('searchKmMsg').style.display='none';
-  document.getElementById('searchKmResult').style.display='none';
-  searchKmItems=[];
-  refreshMapMarkers();
-}
-
-function updateSearchKmDist(){
-  if(!searchKmItems.length || !pos) return;
-  searchKmItems.forEach((item,idx)=>{
-    const el=document.getElementById('srch-km-dist-'+idx);
-    if(el) el.textContent='Distância: '+range(hav(pos.lat,pos.lon,item.lat,item.lon),pos.acc);
-  });
-}
-
-function renderSearchKm(){
-  if(!searchKmItems.length) return;
-  const res=document.getElementById('searchKmResult');
-  res.style.display='block';
-  let html='';
-  searchKmItems.forEach((item,idx)=>{
-    const dt=pos ? 'Distância: '+range(hav(pos.lat,pos.lon,item.lat,item.lon),pos.acc) : 'Aguardando GPS...';
-    const exactKm=findPostExactKm(item);
-    html += `<div class="post searched"><div class="post-top"><div class="post-info"><p class="post-id">#${idx+1} - ID: <span>${item.id}</span></p><p class="post-dist" id="srch-km-dist-${idx}" style="color:var(--green2);">${dt}</p><p class="post-muni" id="muni-${item.id}">Município: consultando...</p><p class="post-coords">KM: ${exactKm} • ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p></div><div class="post-actions"><button class="map-btn" onclick="openMap(${item.lat}, ${item.lon})">Mapa</button></div></div></div>`;
-    resolveMunicipio(item.lat,item.lon).then(m=>{ const el=document.getElementById('muni-'+item.id); if(el) el.textContent='Município: '+m; });
-  });
-  res.innerHTML=html;
-}
-
-function checkLock(){
-  const b=document.getElementById('targetLock');
-  if(!searchItem||!pos){b.classList.remove('on');return;}
-  const d=hav(pos.lat,pos.lon,searchItem.lat,searchItem.lon);
-  if(d <= 5 + (pos.acc || 10)) {
-    b.classList.add('on');
-    document.getElementById('targetLockSub').textContent=`ID ALVO: ${searchItem.id} · DISTÂNCIA EST. ~${Math.round(d)}M`;
-    vibrate([30,100,30]);
-  } else {
-    b.classList.remove('on');
-  }
-}
-
-function sendSingleWhatsApp(id,lat,lon){
-  const txt=`📍 *LOCALIZAÇÃO DE POSTE*\nData/Hora: ${nowBR()}\n\n*ID:* ${id}\nCoordenadas: ${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)}\n🗺️ https://maps.google.com/?q=${Number(lat).toFixed(6)},${Number(lon).toFixed(6)}`;
-  window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank','noopener');
-  showToast(`Poste ${id} enviado para o WhatsApp`);
-}
-
-function renderApoio(){
-  if(!pos||!posts.length) return;
-  if(searchItem) updateSearchDist();
-  if(searchKmItems.length) updateSearchKmDist();
-
-  const qty=Number(document.getElementById('qty').value||10);
-  const items=posts.map(p => ({id:p.id,lat:p.lat,lon:p.lon,d:hav(pos.lat,pos.lon,p.lat,p.lon)})).sort((a,b)=>a.d-b.d).slice(0,qty);
-  const key=items.map(i=>i.id).join(',');
-  const list=document.getElementById('postList');
-
-  if(key===renderedKey){
-    items.forEach((o,i)=>{ const el=document.getElementById('dist-'+i); if(el) el.textContent='Distância: '+range(o.d,pos.acc); const kmEl=document.getElementById('km-exato-'+i); if(kmEl && kmEl.dataset.km) kmEl.textContent='KM: '+kmEl.dataset.km;});
-    document.getElementById('btnSend').disabled=false;
-    return;
-  }
-
-  renderedKey=key;
-  list.innerHTML=items.map((o,i)=>{
-    const exactKm=findPostExactKm(o);
-    const cidade=pos ? 'Município: consultando...' : 'Município: não disponível';
-    return `<div class="post near"><div class="post-top"><div class="post-info"><p class="post-id">#${i+1} - ID: <span>${o.id}</span></p><p class="post-dist" id="dist-${i}">Distância: ${range(o.d,pos.acc)}</p><p class="post-muni" id="muni-list-${o.id}">${cidade}</p><p class="post-coords" id="km-exato-${i}" data-km="KM: ${exactKm}">KM: ${exactKm} • ${o.lat.toFixed(6)}, ${o.lon.toFixed(6)}</p></div><div class="post-actions"><button class="post-wa-btn" onclick="sendSingleWhatsApp('${o.id}', ${o.lat}, ${o.lon})" aria-label="Enviar WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/><path d="M8 9h8M8 13h5"/></svg></button><button class="map-btn" onclick="openMap(${o.lat}, ${o.lon})">Mapa</button></div></div></div>`;
-  }).join('');
-
-  document.getElementById('btnSend').disabled=false;
-  items.forEach(o => {
-    resolveMunicipio(o.lat,o.lon).then(m=>{ const el=document.getElementById('muni-list-'+o.id); if(el) el.textContent='Município: '+m; });
-  });
-}
-
-function initEvents(){
-  document.getElementById('qty').addEventListener('change', renderApoio);
-  document.getElementById('chkMaps').addEventListener('change', ()=>{
-    if(document.getElementById('chkMaps').checked){
-      if(searchItem) renderSearch();
-      if(searchKmItems.length) renderSearchKm();
-    } else {
-      document.getElementById('searchResult').style.display='none';
-      document.getElementById('searchKmResult').style.display='none';
     }
-  });
-}
 
-document.addEventListener('DOMContentLoaded', function(){
-  initEvents();
-  createMap();
-  initApoio();
-});
-</script>
+    async function loadKmData() {
+      const candidates = ['SNVBR116SPRJ.csv', 'km.csv', 'dados_km.csv'];
+      for (const name of candidates) {
+        try {
+          const res = await fetch(name, { cache: 'no-store' });
+          if (!res.ok) continue;
+          const text = await res.text();
+          const rows = parseCsvText(text);
+          if (rows.length > 1) {
+            const headers = rows[0];
+            const kmIdx = findIndex(headers, ['km', 'km_rodovia', 'kilometro', 'quilometro']);
+            const latIdx = findIndex(headers, ['lat', 'latitude']);
+            const lonIdx = findIndex(headers, ['lon', 'long', 'longitude']);
+            if (kmIdx >= 0 && latIdx >= 0 && lonIdx >= 0) {
+              const parsed = [];
+              for (let i = 1; i < rows.length; i++) {
+                const row = rows[i];
+                const km = parseValue(row[kmIdx]);
+                const lat = parseValue(row[latIdx]);
+                const lon = parseValue(row[lonIdx]);
+                if (Number.isFinite(km) && Number.isFinite(lat) && Number.isFinite(lon)) parsed.push({ km, lat, lon });
+              }
+              if (parsed.length) {
+                APP.kmData = parsed;
+                renderKmValue();
+                return;
+              }
+            }
+          }
+        } catch (e) {
+          // ignore
+        }
+      }
+      APP.kmData = [
+        { km: 118.2, lat: -15.79, lon: -47.88 },
+        { km: 118.5, lat: -15.80, lon: -47.89 },
+        { km: 119.0, lat: -15.81, lon: -47.90 },
+        { km: 119.6, lat: -15.78, lon: -47.86 },
+        { km: 120.2, lat: -15.77, lon: -47.85 }
+      ];
+      renderKmValue();
+    }
+
+    function createMap() {
+      if (!window.L) return;
+      if (APP.mapReady) return;
+      const mapEl = document.getElementById('map');
+      APP.map = L.map('map', { zoomControl: true, attributionControl: true, scrollWheelZoom: true, tap: false }).setView([-15.79, -47.88], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(APP.map);
+      APP.routeLayer = L.layerGroup().addTo(APP.map);
+      APP.mapReady = true;
+
+      document.getElementById('btnCenterMap').addEventListener('click', () => {
+        if (APP.position) {
+          APP.map.setView([APP.position.lat, APP.position.lon], 16, { animate: true });
+          showToast('GPS centralizado');
+        } else {
+          showToast('GPS sem sinal', 'err');
+        }
+      });
+      refreshMapMarkers();
+    }
+
+    function buildMarker(lat, lon, htmlColor, label) {
+      const div = document.createElement('div');
+      div.className = 'map-pin';
+      div.style.width = '18px';
+      div.style.height = '18px';
+      div.style.borderRadius = '50%';
+      div.style.background = htmlColor;
+      div.style.border = '3px solid rgba(255,255,255,.9)';
+      div.style.boxShadow = '0 0 0 6px rgba(255,255,255,.08), 0 12px 30px rgba(0,0,0,.35)';
+      div.title = label;
+      return L.marker([lat, lon], {
+        icon: L.divIcon({ className: 'custom-pin', html: div.outerHTML, iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -10] })
+      });
+    }
+
+    function refreshMapMarkers() {
+      if (!APP.mapReady || !APP.map || !APP.routeLayer) return;
+      APP.routeLayer.clearLayers();
+      const bounds = [];
+
+      if (APP.position && Number.isFinite(APP.position.lat) && Number.isFinite(APP.position.lon)) {
+        APP.userMarker = buildMarker(APP.position.lat, APP.position.lon, '#3b82f6', 'Você');
+        APP.userMarker.addTo(APP.routeLayer).bindPopup('Você está aqui');
+        const circle = L.circle([APP.position.lat, APP.position.lon], {
+          radius: Math.max(APP.position.accuracy || 25, 25),
+          color: '#3b82f6', fillColor: '#60a5fa', fillOpacity: 0.18
+        });
+        circle.addTo(APP.routeLayer);
+        bounds.push([APP.position.lat, APP.position.lon]);
+      }
+
+      const items = [...APP.searchKmItems, ...(APP.selectedId ? APP.posts.filter(p => p.id === APP.selectedId) : []), ...APP.posts.slice(0, 10)];
+      const unique = new Map();
+      for (const item of items) {
+        if (!item || !Number.isFinite(item.lat) || !Number.isFinite(item.lon)) continue;
+        if (!unique.has(item.id)) unique.set(item.id, item);
+      }
+      for (const item of unique.values()) {
+        const marker = buildMarker(item.lat, item.lon, '#22c55e', `Poste ${item.id}`);
+        marker.addTo(APP.routeLayer).bindPopup(`Poste ${item.id}`);
+        bounds.push([item.lat, item.lon]);
+      }
+
+      if (APP.routePolyline) {
+        APP.routePolyline.addTo(APP.routeLayer);
+      }
+
+      if (bounds.length) {
+        const group = L.latLngBounds(bounds);
+        if (APP.position && Number.isFinite(APP.position.lat) && Number.isFinite(APP.position.lon) && bounds.length > 1) {
+          APP.map.fitBounds(group.pad(0.35), { animate: true, maxZoom: 17 });
+        } else if (bounds.length > 1) {
+          APP.map.fitBounds(group.pad(0.3), { animate: true, maxZoom: 12 });
+        }
+      }
+    }
+
+    async function fetchRoute(startLat, startLon, endLat, endLon) {
+      const url = `https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson&steps=false`;
+      const data = await fetchJson(url, 10000);
+      if (!data.routes || !data.routes.length) throw new Error('Sem rota');
+      return data.routes[0];
+    }
+
+    function drawRoute(route) {
+      if (!APP.map || !APP.routeLayer) return;
+      if (APP.routePolyline) {
+        APP.routePolyline.remove();
+      }
+      const coords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
+      APP.routePolyline = L.polyline(coords, { color: '#facc15', weight: 5, opacity: 0.9, dashArray: '10, 12' }).addTo(APP.routeLayer);
+      APP.map.fitBounds(L.latLngBounds(coords), { animate: true, maxZoom: 16, padding: [20, 20] });
+    }
+
+    async function updateRouteToTarget() {
+      if (!APP.position || !APP.selectedId) {
+        if (APP.routePolyline) {
+          APP.routePolyline.remove();
+          APP.routePolyline = null;
+        }
+        setMapMeta('sem rota', 'consultando');
+        return;
+      }
+
+      const item = APP.posts.find(p => p.id === APP.selectedId);
+      if (!item) {
+        setMapMeta('sem rota', 'consultando');
+        return;
+      }
+
+      try {
+        const route = await fetchRoute(APP.position.lat, APP.position.lon, item.lat, item.lon);
+        drawRoute(route);
+        const distMeters = route.distance || 0;
+        setMapMeta(`${Math.round(distMeters)} m`, 'rodovia próxima');
+      } catch (e) {
+        if (APP.routePolyline) {
+          APP.routePolyline.remove();
+          APP.routePolyline = null;
+        }
+        setMapMeta('sem rota', 'via não identificada');
+      }
+    }
+
+    function setTargetLock() {
+      const lock = document.getElementById('targetLock');
+      if (!lock) return;
+      if (!APP.position || !APP.selectedId) {
+        lock.classList.remove('on');
+        return;
+      }
+      const item = APP.posts.find(p => p.id === APP.selectedId);
+      if (!item) {
+        lock.classList.remove('on');
+        return;
+      }
+      const dist = haversineMeters(APP.position.lat, APP.position.lon, item.lat, item.lon);
+      if (dist <= 5 + (APP.position.accuracy || 10)) {
+        lock.classList.add('on');
+        document.getElementById('targetLockSub').textContent = `ID ALVO: ${item.id} | DISTÂNCIA EST. ~${Math.round(dist)}M`;
+      } else {
+        lock.classList.remove('on');
+      }
+    }
+
+    function renderSearchResult() {
+      const res = document.getElementById('searchResult');
+      if (!APP.selectedId) {
+        res.style.display = 'none';
+        return;
+      }
+      const item = APP.posts.find(p => p.id === APP.selectedId);
+      if (!item) {
+        res.style.display = 'none';
+        return;
+      }
+      const distText = APP.position ? `Distância: ${rangeText(haversineMeters(APP.position.lat, APP.position.lon, item.lat, item.lon), APP.position.accuracy)}` : 'Distância: aguardando GPS...';
+      const kmVal = APP.kmData.length ? (() => { const nearest = APP.kmData.reduce((best, p) => { const d = haversineMeters(item.lat, item.lon, p.lat, p.lon); return d < best.d ? { p, d } : best; }, { p: APP.kmData[0], d: Infinity}); return nearest.p.km.toFixed(2).replace('.', ','); })() : '—';
+      res.style.display = 'block';
+      res.innerHTML = `
+        <div class="post searched">
+          <div class="post-top">
+            <div class="post-info">
+              <p class="post-id">OS / ID: <span>${item.id}</span></p>
+              <p class="post-dist" style="color:var(--green2);">${distText}</p>
+              <p class="post-muni">Município: consultando...</p>
+              <p class="post-coords">KM: ${kmVal} • ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p>
+            </div>
+            <div class="post-actions">
+              <button class="map-btn" onclick="window.open('https://maps.google.com/?q=${item.lat},${item.lon}','_blank','noopener');">Mapa</button>
+            </div>
+          </div>
+        </div>
+      `;
+      resolveMunicipioText(item.lat, item.lon).then(m => {
+        const muniEl = res.querySelector('.post-muni');
+        if (muniEl) muniEl.textContent = 'Município: ' + m;
+      });
+    }
+
+    function renderKmSearchResult() {
+      const res = document.getElementById('searchKmResult');
+      if (!APP.searchKmItems.length) {
+        res.style.display = 'none';
+        return;
+      }
+      res.style.display = 'block';
+      const html = APP.searchKmItems.map((item, idx) => {
+        const dist = APP.position ? `Distância: ${rangeText(haversineMeters(APP.position.lat, APP.position.lon, item.lat, item.lon), APP.position.accuracy)}` : 'Distância: aguardando GPS...';
+        const kmVal = APP.kmData.length ? (() => {
+          const nearest = APP.kmData.reduce((best, p) => {
+            const d = haversineMeters(item.lat, item.lon, p.lat, p.lon);
+            return d < best.d ? { p, d } : best;
+          }, { p: APP.kmData[0], d: Infinity});
+          return nearest.p.km.toFixed(2).replace('.', ',');
+        })() : '—';
+        return `
+          <div class="post searched">
+            <div class="post-top">
+              <div class="post-info">
+                <p class="post-id">#${idx + 1} - ID: <span>${item.id}</span></p>
+                <p class="post-dist" style="color:var(--green2);">${dist}</p>
+                <p class="post-muni">Município: consultando...</p>
+                <p class="post-coords">KM: ${kmVal} • ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p>
+              </div>
+              <div class="post-actions">
+                <button class="map-btn" onclick="window.open('https://maps.google.com/?q=${item.lat},${item.lon}','_blank','noopener');">Mapa</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+      res.innerHTML = html;
+      for (const item of APP.searchKmItems) {
+        resolveMunicipioText(item.lat, item.lon).then(m => {
+          const muniEls = res.querySelectorAll('.post-muni');
+          const list = [...muniEls];
+          if (list.length) {
+            const relevant = list.find(el => el.parentElement && el.parentElement.innerHTML.includes(item.id));
+            if (relevant) relevant.textContent = 'Município: ' + m;
+          }
+        });
+      }
+    }
+
+    function searchId() {
+      const raw = document.getElementById('inputId').value.trim();
+      const msg = document.getElementById('searchMsg');
+      const result = document.getElementById('searchResult');
+
+      if (!raw || raw.length !== 8 || !/^\d{8}$/.test(raw)) {
+        msg.style.display = 'flex';
+        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>ID DEVE TER EXATAMENTE 8 DÍGITOS';
+        APP.selectedId = null;
+        result.style.display = 'none';
+        setTargetLock();
+        refreshMapMarkers();
+        return;
+      }
+
+      const found = APP.posts.find(p => p.id === raw);
+      if (!found) {
+        msg.style.display = 'flex';
+        msg.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>ID "${raw}" NÃO ENCONTRADO.`;
+        APP.selectedId = null;
+        result.style.display = 'none';
+        setTargetLock();
+        refreshMapMarkers();
+        return;
+      }
+
+      msg.style.display = 'none';
+      APP.selectedId = raw;
+      renderSearchResult();
+      updateRouteToTarget();
+      setTargetLock();
+      refreshMapMarkers();
+      showToast('Poste encontrado: ' + found.id);
+    }
+
+    function clearId() {
+      document.getElementById('inputId').value = '';
+      document.getElementById('searchMsg').style.display = 'none';
+      document.getElementById('searchResult').style.display = 'none';
+      APP.selectedId = null;
+      setTargetLock();
+      if (APP.routePolyline) {
+        APP.routePolyline.remove();
+        APP.routePolyline = null;
+      }
+      setMapMeta('sem rota', 'consultando');
+      refreshMapMarkers();
+    }
+
+    function searchKm() {
+      const raw = document.getElementById('inputKm').value.trim();
+      const msg = document.getElementById('searchKmMsg');
+      const result = document.getElementById('searchKmResult');
+      if (!raw) {
+        msg.style.display = 'flex';
+        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>INFORME UM KM VÁLIDO';
+        return;
+      }
+
+      const target = Number(raw.replace(',', '.'));
+      if (!Number.isFinite(target)) {
+        msg.style.display = 'flex';
+        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>KM INVÁLIDO';
+        return;
+      }
+
+      if (!APP.kmData.length) {
+        msg.style.display = 'flex';
+        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>CARREGANDO DADOS DE KM';
+        return;
+      }
+
+      const sorted = APP.kmData
+        .map(item => ({ ...item, diff: Math.abs(item.km - target) }))
+        .sort((a, b) => a.diff - b.diff)
+        .slice(0, 10)
+        .map(item => {
+          const poste = APP.posts
+            .map(p => ({ ...p, dist: haversineMeters(item.lat, item.lon, p.lat, p.lon) }))
+            .sort((a, b) => a.dist - b.dist)[0];
+          return poste || null;
+        })
+        .filter(Boolean)
+        .slice(0, 10);
+
+      if (!sorted.length) {
+        msg.style.display = 'flex';
+        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>NÃO HÁ POSTES PRÓXIMOS PARA ESTE KM.';
+        result.style.display = 'none';
+        return;
+      }
+
+      APP.searchKmItems = sorted;
+      msg.style.display = 'none';
+      renderKmSearchResult();
+      refreshMapMarkers();
+      showToast('10 postes mais próximos do KM ' + raw);
+    }
+
+    function clearKm() {
+      document.getElementById('inputKm').value = '';
+      document.getElementById('searchKmMsg').style.display = 'none';
+      document.getElementById('searchKmResult').style.display = 'none';
+      APP.searchKmItems = [];
+      refreshMapMarkers();
+    }
+
+    function renderApoio() {
+      if (!APP.position || !APP.posts.length) return;
+      const qty = Number(document.getElementById('qty').value || 10);
+      const items = APP.posts
+        .map(item => ({ ...item, d: haversineMeters(APP.position.lat, APP.position.lon, item.lat, item.lon) }))
+        .sort((a, b) => a.d - b.d)
+        .slice(0, qty);
+
+      const key = items.map(i => i.id).join(',');
+      if (key === APP.renderedKey) return;
+      APP.renderedKey = key;
+
+      const list = document.getElementById('postList');
+      list.innerHTML = items.map((item, idx) => {
+        const kmNearest = APP.kmData.length ? (() => {
+          const nearest = APP.kmData.reduce((best, p) => {
+            const d = haversineMeters(item.lat, item.lon, p.lat, p.lon);
+            return d < best.d ? { p, d } : best;
+          }, { p: APP.kmData[0], d: Infinity});
+          return nearest.p.km.toFixed(2).replace('.', ',');
+        })() : '—';
+        return `
+          <div class="post near">
+            <div class="post-top">
+              <div class="post-info">
+                <p class="post-id">#${idx + 1} - ID: <span>${item.id}</span></p>
+                <p class="post-dist">Distância: ${rangeText(item.d, APP.position.accuracy)}</p>
+                <p class="post-muni">Município: consultando...</p>
+                <p class="post-coords">KM: ${kmNearest} • ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p>
+              </div>
+              <div class="post-actions">
+                <button class="post-wa-btn" onclick="sendSingleWhatsApp('${item.id}', ${item.lat}, ${item.lon})" aria-label="Enviar WhatsApp">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/><path d="M8 9h8M8 13h5"/></svg>
+                </button>
+                <button class="map-btn" onclick="window.open('https://maps.google.com/?q=${item.lat},${item.lon}','_blank','noopener');">Mapa</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      document.getElementById('btnSend').disabled = false;
+      for (const item of items) {
+        resolveMunicipioText(item.lat, item.lon).then(m => {
+          const muniEls = list.querySelectorAll('.post-muni');
+          for (const el of muniEls) {
+            if (el.parentElement && el.parentElement.innerHTML.includes(item.id)) {
+              el.textContent = 'Município: ' + m;
+            }
+          }
+        });
+      }
+    }
+
+    function sendSingleWhatsApp(id, lat, lon) {
+      const text = `📍 *LOCALIZAÇÃO DE POSTE*\nData/Hora: ${new Date().toLocaleString('pt-BR')}\n\n*ID:* ${id}\nCoordenadas: ${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)}\n🗺️ https://maps.google.com/?q=${Number(lat).toFixed(6)},${Number(lon).toFixed(6)}`;
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      showToast(`Poste ${id} enviado para o WhatsApp`);
+    }
+
+    function bindEvents() {
+      document.getElementById('qty').addEventListener('change', renderApoio);
+      document.getElementById('chkMaps').addEventListener('change', () => {
+        const enabled = document.getElementById('chkMaps').checked;
+        const result = document.getElementById('searchResult');
+        const resultKm = document.getElementById('searchKmResult');
+        if (!enabled) {
+          if (result) result.style.display = 'none';
+          if (resultKm) resultKm.style.display = 'none';
+        } else {
+          if (APP.selectedId) renderSearchResult();
+          if (APP.searchKmItems.length) renderKmSearchResult();
+        }
+      });
+    }
+
+    function updatePosition(position) {
+      APP.position = { lat: position.coords.latitude, lon: position.coords.longitude, accuracy: position.coords.accuracy };
+      gpsBadge(document.getElementById('gpsStatus'), APP.position);
+      renderKmValue();
+      renderApoio();
+      setTargetLock();
+      refreshMapMarkers();
+      if (APP.selectedId) updateRouteToTarget();
+    }
+
+    function initGeo() {
+      if (!('geolocation' in navigator)) {
+        gpsBadge(document.getElementById('gpsStatus'), null, 'GPS · NÃO DISPONÍVEL');
+        return;
+      }
+      navigator.geolocation.watchPosition(updatePosition, () => {
+        gpsBadge(document.getElementById('gpsStatus'), null, 'GPS · SEM PERMISSÃO');
+      }, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000
+      });
+    }
+
+    function init() {
+      if (APP.initDone) return;
+      APP.initDone = true;
+      bindEvents();
+      createMap();
+      loadPosts();
+      loadKmData();
+      initGeo();
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+  </script>
 </body>
 </html>
