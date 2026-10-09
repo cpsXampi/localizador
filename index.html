@@ -6,8 +6,10 @@
 <meta name="theme-color" content="#0b1020">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Apoio Localização</title>
+<title>Apoio Localização v2</title>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 <style>
 :root{
   --bg:#050816;
@@ -61,320 +63,126 @@ body{
   -moz-osx-font-smoothing:grayscale;
   overscroll-behavior:none;
 }
-button{
-  font-family:var(--font);cursor:pointer;border:0;background:none;color:inherit;
-  -webkit-user-select:none;user-select:none;touch-action:manipulation;
-}
+button{font-family:var(--font);cursor:pointer;border:0;background:none;color:inherit;-webkit-user-select:none;user-select:none;touch-action:manipulation}
 button:active{opacity:.80;transform:scale(.96);transition:transform 60ms,opacity 60ms}
 input,select{font-family:var(--font);outline:none}
 img,video{display:block;max-width:100%}
-::-webkit-scrollbar{width:3px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--dim);border-radius:9px}
 
-.hdr{
-  position:sticky;top:0;z-index:50;
-  border-bottom:1px solid var(--border2);
-  background:rgba(5,10,24,.92);
-  backdrop-filter:blur(28px) saturate(1.4);
-  -webkit-backdrop-filter:blur(28px) saturate(1.4);
-  padding:0 16px;padding-top:var(--safe-t);
-}
-.hdr-in{
-  max-width:680px;margin:0 auto;
-  display:flex;align-items:center;gap:12px;height:58px;
-}
+.hdr{position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border2);background:rgba(5,10,24,.92);backdrop-filter:blur(28px) saturate(1.4);-webkit-backdrop-filter:blur(28px) saturate(1.4);padding:0 16px;padding-top:var(--safe-t)}
+.hdr-in{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:12px;height:58px}
 .hdr-title{flex:1;min-width:0}
-.hdr-title h1{
-  font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
-.hdr-title p{
-  font-size:10px;color:var(--muted);font-weight:500;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;
-}
-.hdr-badge{
-  width:36px;height:36px;border-radius:var(--r-xs);
-  background:var(--violet-dim);color:var(--violet2);
-  display:grid;place-items:center;flex-shrink:0;
-}
+.hdr-title h1{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.15em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hdr-title p{font-size:10px;color:var(--muted);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.hdr-badge{width:36px;height:36px;border-radius:var(--r-xs);background:var(--violet-dim);color:var(--violet2);display:grid;place-items:center;flex-shrink:0}
 .hdr-badge svg{width:18px;height:18px}
+.hdr-tabs{display:flex;gap:8px;margin-left:auto}
+.hdr-tab{padding:6px 12px;font-size:10px;font-weight:800;text-transform:uppercase;border-radius:var(--r-xs);background:transparent;border:1px solid var(--border2);cursor:pointer;transition:all .15s var(--ease);color:var(--muted)}
+.hdr-tab.active{background:var(--violet-dim);color:var(--violet2);border-color:var(--violet2)}
 
-.wrap{
-  max-width:680px;margin:0 auto;
-  padding:16px;padding-bottom:var(--safe-b);
-  display:flex;flex-direction:column;gap:16px;
-}
+.wrap{max-width:680px;margin:0 auto;padding:16px;padding-bottom:var(--safe-b);display:flex;flex-direction:column;gap:16px}
 
-.section-block{
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  background:rgba(13,18,36,0.65);
-  border:1px solid var(--border2);
-  border-radius:var(--r-xl);
-  padding:16px;
-  backdrop-filter:blur(12px);
-}
-.section-header{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  font-size:11px;
-  font-weight:900;
-  text-transform:uppercase;
-  letter-spacing:.18em;
-  color:var(--accent);
-  padding-bottom:4px;
-  border-bottom:1px solid var(--border);
-}
-.section-header.proximity-title{
-  color:var(--green2);
-}
+.section-block{display:flex;flex-direction:column;gap:12px;background:rgba(13,18,36,0.65);border:1px solid var(--border2);border-radius:var(--r-xl);padding:16px;backdrop-filter:blur(12px)}
+.section-header{display:flex;align-items:center;gap:8px;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:.18em;color:var(--accent);padding-bottom:4px;border-bottom:1px solid var(--border)}
+.section-header.proximity-title{color:var(--green2)}
 .section-header svg{width:16px;height:16px}
 
-.km-hero{
-  border-radius:var(--r-lg);
-  border:1px solid rgba(16,185,129,.28);
-  background:linear-gradient(155deg,#065f46 0%,#022c22 55%,#020617 100%);
-  text-align:center;
-  padding:16px 20px;
-  position:relative;overflow:hidden;
-  box-shadow:0 12px 35px rgba(6,95,70,.35);
-}
-.km-hero::before{
-  content:"";position:absolute;inset:0;
-  background:radial-gradient(circle at 30% 25%,rgba(16,185,129,.18),transparent 55%);
-  pointer-events:none;
-}
-.km-label{
-  font-size:10px;font-weight:900;text-transform:uppercase;
-  letter-spacing:.25em;color:rgba(220,252,231,.65);position:relative;
-}
-.km-value{
-  font-size:clamp(34px,10vw,48px);font-weight:900;
-  line-height:1.05;letter-spacing:-.04em;margin-top:2px;
-  font-variant-numeric:tabular-nums;position:relative;
-  background:linear-gradient(180deg,#fff 25%,#6ee7b7);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.km-sub{
-  font-size:10px;font-weight:600;color:rgba(220,252,231,.5);
-  margin-top:4px;position:relative;
-}
+.card{border-radius:var(--r-lg);border:1px solid var(--border);background:linear-gradient(145deg,rgba(15,23,42,.95),rgba(17,24,39,.9));padding:14px;position:relative;overflow:hidden}
+.card-accent{border-color:rgba(92,33,255,.35);background:linear-gradient(145deg,rgba(92,33,255,.08),rgba(15,23,42,.95))}
+.card-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.2em;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.card-label::before{content:"";width:3px;height:10px;border-radius:2px;background:var(--violet2)}
 
-.gps{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  min-height:42px;border-radius:var(--r-sm);
-  border:1px solid;padding:0 14px;
-  font-size:11px;font-weight:800;letter-spacing:.06em;
-  text-align:center;transition:all .15s var(--ease);
-}
+.search-row{display:flex;gap:8px}
+.search-wrap{flex:1;min-width:0;position:relative}
+.search-wrap svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--dim);pointer-events:none}
+.search-input{width:100%;border-radius:var(--r-sm);border:1px solid var(--border3);background:rgba(15,23,42,.9);padding:12px 14px 12px 38px;font-size:13px;font-weight:800;text-transform:uppercase;color:#fff;transition:all .15s var(--ease)}
+.search-input::placeholder{color:var(--dim);font-weight:700}
+.search-input:focus{border-color:var(--violet2);box-shadow:0 0 0 3px rgba(92,33,255,.35)}
+.btn-icon{width:44px;height:44px;border-radius:var(--r-sm);display:grid;place-items:center;flex-shrink:0;transition:all .1s var(--ease)}
+.btn-icon.go{background:linear-gradient(135deg,var(--violet),var(--violet2));color:#fff;box-shadow:0 3px 14px rgba(79,70,229,.50)}
+.btn-icon.clr{border:1px solid var(--border2);background:rgba(15,23,42,.9);color:var(--muted)}
+.btn-icon svg{width:16px;height:16px}
+.search-msg{margin-top:8px;font-size:11px;font-weight:800;text-transform:uppercase;color:var(--warn);display:flex;align-items:center;gap:6px}
+.search-msg svg{width:13px;height:13px}
+
+.km-hero{border-radius:var(--r-lg);border:1px solid rgba(16,185,129,.28);background:linear-gradient(155deg,#065f46 0%,#022c22 55%,#020617 100%);text-align:center;padding:16px 20px;position:relative;overflow:hidden;box-shadow:0 12px 35px rgba(6,95,70,.35)}
+.km-hero::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 30% 25%,rgba(16,185,129,.18),transparent 55%);pointer-events:none}
+.km-label{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.25em;color:rgba(220,252,231,.65);position:relative}
+.km-value{font-size:clamp(34px,10vw,48px);font-weight:900;line-height:1.05;letter-spacing:-.04em;margin-top:2px;font-variant-numeric:tabular-nums;position:relative;background:linear-gradient(180deg,#fff 25%,#6ee7b7);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.km-sub{font-size:10px;font-weight:600;color:rgba(220,252,231,.5);margin-top:4px;position:relative}
+
+.gps{display:flex;align-items:center;justify-content:center;gap:8px;min-height:42px;border-radius:var(--r-sm);border:1px solid;padding:0 14px;font-size:11px;font-weight:800;letter-spacing:.06em;text-align:center;transition:all .15s var(--ease)}
 .gps svg{width:14px;height:14px;flex-shrink:0}
 .gps.bad{border-color:rgba(148,163,184,.35);background:rgba(15,23,42,.9);color:#e5e7eb}
 .gps.ok{border-color:rgba(16,185,129,.45);background:var(--green-dim);color:#d1fae5}
 .gps.warn{border-color:rgba(245,158,11,.35);background:var(--warn-dim);color:#fef3c7}
 
-.card{
-  border-radius:var(--r-lg);
-  border:1px solid var(--border);
-  background:linear-gradient(145deg,rgba(15,23,42,.95),rgba(17,24,39,.9));
-  padding:14px;position:relative;overflow:hidden;
-}
-.card-accent{
-  border-color:rgba(92,33,255,.35);
-  background:linear-gradient(145deg,rgba(92,33,255,.08),rgba(15,23,42,.95));
-}
-.card-label{
-  font-size:10px;font-weight:900;text-transform:uppercase;
-  letter-spacing:.2em;color:var(--text2);
-  margin-bottom:10px;display:flex;align-items:center;gap:8px;
-}
-.card-label::before{
-  content:"";width:3px;height:10px;border-radius:2px;background:var(--violet2);
-}
-
-.search-row{display:flex;gap:8px}
-.search-wrap{flex:1;min-width:0;position:relative}
-.search-wrap svg{
-  position:absolute;left:13px;top:50%;transform:translateY(-50%);
-  width:15px;height:15px;color:var(--dim);pointer-events:none;
-}
-.search-input{
-  width:100%;border-radius:var(--r-sm);
-  border:1px solid var(--border3);
-  background:rgba(15,23,42,.9);
-  padding:12px 14px 12px 38px;
-  font-size:13px;font-weight:800;text-transform:uppercase;color:#fff;
-  transition:all .15s var(--ease);
-}
-.search-input::placeholder{color:var(--dim);font-weight:700}
-.search-input:focus{
-  border-color:var(--violet2);
-  box-shadow:0 0 0 3px rgba(92,33,255,.35);
-}
-.btn-icon{
-  width:44px;height:44px;border-radius:var(--r-sm);
-  display:grid;place-items:center;flex-shrink:0;
-  transition:all .1s var(--ease);
-}
-.btn-icon:active{transform:scale(.9)}
-.btn-icon.go{
-  background:linear-gradient(135deg,var(--violet),var(--violet2));
-  color:#fff;
-  box-shadow:0 3px 14px rgba(79,70,229,.50);
-}
-.btn-icon.clr{
-  border:1px solid var(--border2);
-  background:rgba(15,23,42,.9);
-  color:var(--muted);
-}
-.btn-icon svg{width:16px;height:16px}
-.search-msg{
-  margin-top:8px;font-size:11px;font-weight:800;
-  text-transform:uppercase;color:var(--warn);
-  display:flex;align-items:center;gap:6px;
-}
-.search-msg svg{width:13px;height:13px}
-
-.target-lock{
-  display:none;border-radius:var(--r-lg);
-  border:2px solid var(--green);
-  background:linear-gradient(145deg,rgba(16,185,129,.18),rgba(15,23,42,.95));
-  padding:16px;text-align:center;position:relative;overflow:hidden;
-}
-.target-lock.on{
-  display:block;
-  animation:lockIn .3s var(--ease-bounce),lockPulse 2.5s infinite;
-}
+.target-lock{display:none;border-radius:var(--r-lg);border:2px solid var(--green);background:linear-gradient(145deg,rgba(16,185,129,.18),rgba(15,23,42,.95));padding:16px;text-align:center;position:relative;overflow:hidden}
+.target-lock.on{display:block;animation:lockIn .3s var(--ease-bounce),lockPulse 2.5s infinite}
 @keyframes lockIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 @keyframes lockPulse{0%,100%{box-shadow:0 0 0 0 rgba(16,185,129,.25)}50%{box-shadow:0 0 0 10px rgba(16,185,129,0)}}
-.target-lock h2{
-  font-size:13px;font-weight:900;text-transform:uppercase;
-  letter-spacing:.06em;position:relative;
-}
-.target-lock p{
-  font-size:11px;font-weight:700;margin-top:4px;opacity:.85;position:relative;
-}
+.target-lock h2{font-size:13px;font-weight:900;text-transform:uppercase;letter-spacing:.06em;position:relative}
+.target-lock p{font-size:11px;font-weight:700;margin-top:4px;opacity:.85;position:relative}
 
-.post{
-  border-radius:var(--r-lg);overflow:hidden;
-  border:1px solid var(--border2);
-  background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(17,24,39,.95));
-  transition:all .15s var(--ease);
-}
-.post.near{
-  border-color:rgba(16,185,129,.5);
-  background:linear-gradient(145deg,rgba(16,185,129,.12),rgba(17,24,39,.96));
-  box-shadow:0 6px 24px rgba(15,23,42,.85);
-}
-.post.searched{
-  border-color:rgba(92,33,255,.48);
-  background:linear-gradient(145deg,rgba(92,33,255,.14),rgba(17,24,39,.96));
-}
+.post{border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--border2);background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(17,24,39,.95));transition:all .15s var(--ease);cursor:pointer}
+.post:hover{border-color:rgba(92,33,255,.5);background:linear-gradient(145deg,rgba(92,33,255,.12),rgba(17,24,39,.96))}
+.post.near{border-color:rgba(16,185,129,.5);background:linear-gradient(145deg,rgba(16,185,129,.12),rgba(17,24,39,.96));box-shadow:0 6px 24px rgba(15,23,42,.85)}
+.post.searched{border-color:rgba(92,33,255,.48);background:linear-gradient(145deg,rgba(92,33,255,.14),rgba(17,24,39,.96))}
 .post-top{display:flex;align-items:flex-start;gap:12px;padding:14px}
-.post-chk{margin-top:2px;width:18px;height:18px;accent-color:var(--violet2);flex-shrink:0}
-.post-id{
-  font-size:12px;font-weight:900;text-transform:uppercase;
-  letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-}
+.post-info{flex:1}
+.post-id{font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .post-id span{color:var(--accent)}
-.post-dist{
-  font-size:10px;font-weight:700;text-transform:uppercase;
-  color:var(--muted);margin-top:3px;
-}
-.post-muni{
-  font-size:9px;font-weight:700;text-transform:uppercase;
-  letter-spacing:.08em;color:var(--text3);margin-top:3px;opacity:.9;
-}
-.post-coords{
-  font-size:10px;color:var(--dim);font-weight:600;margin-top:2px;
-}
-.post-pin{
-  flex-shrink:0;width:30px;height:30px;border-radius:9px;
-  background:var(--accent-dim);color:var(--accent);
-  display:grid;place-items:center;
-}
+.post-dist{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.post-muni{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-top:3px;opacity:.9}
+.post-coords{font-size:10px;color:var(--dim);font-weight:600;margin-top:2px}
+.post-pin{flex-shrink:0;width:30px;height:30px;border-radius:9px;background:var(--accent-dim);color:var(--accent);display:grid;place-items:center}
 .post-pin svg{width:15px;height:15px}
 
-.post-wa-btn{
-  width:34px;height:34px;border-radius:9px;
-  background:rgba(16,185,129,.15);
-  border:1px solid rgba(16,185,129,.35);
-  color:var(--green2);
-  display:grid;place-items:center;flex-shrink:0;
-  transition:all .1s var(--ease);
-}
+.post-wa-btn{width:34px;height:34px;border-radius:9px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.35);color:var(--green2);display:grid;place-items:center;flex-shrink:0;transition:all .1s var(--ease)}
 .post-wa-btn:active{transform:scale(.9);background:rgba(16,185,129,.3)}
 .post-wa-btn svg{width:16px;height:16px}
 
-.post-map-container{padding:0 14px 14px 14px;}
-.post-map{
-  height:150px;width:100%;border:0;
-  filter:grayscale(10%) contrast(1.06);
-  border-radius:var(--r-xs);
-  box-shadow:inset 0 0 10px rgba(0,0,0,.5);
-}
+.post-map-container{height:180px;border-radius:var(--r-xs);overflow:hidden;margin-top:12px;margin:0 14px 14px 14px;background:rgba(0,0,0,.3)}
+.post-map{height:100%;width:100%;border:0;border-radius:var(--r-xs);z-index:10}
 
-.ctrl-send{
-  width:100%;min-height:46px;border-radius:var(--r-sm);
-  background:linear-gradient(135deg,var(--green),var(--green3));
-  color:#fff;font-size:12px;font-weight:900;
-  text-transform:uppercase;letter-spacing:.07em;
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  transition:all .1s var(--ease);
-  box-shadow:0 3px 18px rgba(16,185,129,.40);
-}
-.ctrl-send:disabled{
-  background:linear-gradient(135deg,var(--dimmer),var(--dim));
-  color:var(--dim);cursor:not-allowed;box-shadow:none;
-}
+.ctrl-send{width:100%;min-height:46px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--green),var(--green3));color:#fff;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .1s var(--ease);box-shadow:0 3px 18px rgba(16,185,129,.40)}
+.ctrl-send:disabled{background:linear-gradient(135deg,var(--dimmer),var(--dim));color:var(--dim);cursor:not-allowed;box-shadow:none}
 .ctrl-send:active:not(:disabled){transform:scale(.98)}
 .ctrl-send svg{width:16px;height:16px}
-.ctrl-row{
-  display:flex;align-items:center;justify-content:space-between;
-  gap:16px;margin-top:10px;
-}
-.ctrl-label{
-  font-size:10px;font-weight:800;text-transform:uppercase;
-  color:var(--muted);display:flex;align-items:center;gap:8px;
-}
-.ctrl-select{
-  border-radius:var(--r-xs);border:1px solid var(--border2);
-  background:var(--surface);color:#fff;
-  padding:7px 28px 7px 10px;font-size:12px;font-weight:800;
-  appearance:none;-webkit-appearance:none;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;background-position:right 8px center;
-}
+.ctrl-row{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:10px;flex-wrap:wrap}
+.ctrl-label{font-size:10px;font-weight:800;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:8px}
+.ctrl-select{border-radius:var(--r-xs);border:1px solid var(--border2);background:var(--surface);color:#fff;padding:7px 28px 7px 10px;font-size:12px;font-weight:800;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2.5'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center}
 .ctrl-chk{width:18px;height:18px;accent-color:var(--accent)}
 
-.skel{
-  height:120px;border-radius:var(--r-lg);
-  background:linear-gradient(110deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%);
-  background-size:200% 100%;
-  animation:shimmer 1.5s infinite linear;
-}
+.skel{height:120px;border-radius:var(--r-lg);background:linear-gradient(110deg,var(--surface) 30%,var(--surface2) 50%,var(--surface) 70%);background-size:200% 100%;animation:shimmer 1.5s infinite linear}
 @keyframes shimmer{from{background-position:200% 0}to{background-position:-200% 0}}
 
-.toast{
-  position:fixed;bottom:calc(18px + var(--safe-b));left:50%;
-  transform:translateX(-50%) translateY(16px);
-  border-radius:var(--r-sm);border:1px solid var(--border2);
-  background:var(--surface);
-  padding:12px 20px;font-size:11px;font-weight:800;
-  text-transform:uppercase;letter-spacing:.04em;
-  box-shadow:shadow-lg;
-  backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
-  z-index:99998;opacity:0;transition:all .2s var(--ease);
-  pointer-events:none;display:flex;align-items:center;gap:8px;
-}
+.toast{position:fixed;bottom:calc(18px + var(--safe-b));left:50%;transform:translateX(-50%) translateY(16px);border-radius:var(--r-sm);border:1px solid var(--border2);background:var(--surface);padding:12px 20px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);z-index:99998;opacity:0;transition:all .2s var(--ease);pointer-events:none;display:flex;align-items:center;gap:8px}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .toast svg{width:14px;height:14px;flex-shrink:0}
 .toast.ok{border-color:rgba(16,185,129,.45);color:var(--green2)}
 .toast.ok svg{color:var(--green)}
 .toast.err{border-color:rgba(239,68,68,.45);color:#fecaca}
 .toast.err svg{color:var(--red)}
+
+.map-container{height:350px;border-radius:var(--r-lg);border:1px solid var(--border2);overflow:hidden;background:rgba(0,0,0,.5);position:relative;z-index:20}
+.leaflet-control-attribution{display:none !important}
+
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+.history-list{max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.history-item{padding:10px;background:rgba(92,33,255,.08);border:1px solid rgba(92,33,255,.2);border-radius:var(--r-sm);font-size:11px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .15s}
+.history-item:hover{background:rgba(92,33,255,.15);border-color:rgba(92,33,255,.35)}
+.history-time{color:var(--muted);font-size:9px}
+
+.badge-info{display:inline-block;padding:4px 8px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);border-radius:var(--r-xs);font-size:9px;font-weight:700;color:var(--green2);margin-top:6px}
+
+@media(max-width:600px){
+  .hdr-tabs{gap:4px}
+  .hdr-tab{padding:4px 8px;font-size:9px}
+  .ctrl-row{flex-direction:column;align-items:stretch}
+  .ctrl-label{justify-content:space-between}
+}
 </style>
 </head>
 <body>
@@ -382,8 +190,8 @@ img,video{display:block;max-width:100%}
 <header class="hdr">
   <div class="hdr-in">
     <div class="hdr-title">
-      <h1>Apoio Localização</h1>
-      <p>Pesquisa & Proximidade GPS</p>
+      <h1>Apoio Localização v2</h1>
+      <p>GPS, Pesquisa & Mapas</p>
     </div>
     <span class="hdr-badge">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -395,30 +203,27 @@ img,video{display:block;max-width:100%}
 
 <div class="wrap">
 
+  <!-- BUSCA -->
   <div class="section-block">
     <div class="section-header">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-      Seção de Pesquisa (ID ou KM)
+      Pesquisa (ID ou KM)
     </div>
 
     <div class="card card-accent">
-      <p class="card-label">Pesquisa ID-NX (8 dígitos)</p>
+      <p class="card-label">ID-NX (8 dígitos)</p>
       <div class="search-row">
         <div class="search-wrap">
-          <input class="search-input" id="inputId" placeholder="EX: 12345678" autocomplete="off" spellcheck="false" inputmode="numeric" maxlength="8" pattern="\d*" onkeydown="if(event.key==='Enter')searchId()">
+          <input class="search-input" id="inputId" placeholder="EX: 12345678" autocomplete="off" spellcheck="false" inputmode="numeric" maxlength="8" onkeydown="if(event.key==='Enter')searchId()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
           </svg>
         </div>
         <button class="btn-icon go" onclick="searchId()" aria-label="Buscar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
-          </svg>
+          <i class="fas fa-search"></i>
         </button>
         <button class="btn-icon clr" onclick="clearId()" aria-label="Limpar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M18 6 6 18M6 6l12 12"/>
-          </svg>
+          <i class="fas fa-times"></i>
         </button>
       </div>
       <div id="searchMsg" class="search-msg" style="display:none"></div>
@@ -426,24 +231,37 @@ img,video{display:block;max-width:100%}
     </div>
 
     <div class="card card-accent">
-      <p class="card-label">Pesquisa por KM (10 mais próximos)</p>
+      <p class="card-label">KM (10 postes mais próximos)</p>
       <div class="search-row">
         <div class="search-wrap">
-          <input class="search-input" id="inputKm" placeholder="EX: 115 ou 115.5" autocomplete="off" spellcheck="false" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" onkeydown="if(event.key==='Enter')searchKm()">
+          <input class="search-input" id="inputKm" placeholder="EX: 115 ou 115.5" autocomplete="off" spellcheck="false" inputmode="decimal" onkeydown="if(event.key==='Enter')searchKm()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
         </div>
-        <button class="btn-icon go" onclick="searchKm()" aria-label="Buscar KM"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></button>
-        <button class="btn-icon clr" onclick="clearKm()" aria-label="Limpar KM"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+        <button class="btn-icon go" onclick="searchKm()" aria-label="Buscar KM"><i class="fas fa-search"></i></button>
+        <button class="btn-icon clr" onclick="clearKm()" aria-label="Limpar"><i class="fas fa-times"></i></button>
       </div>
       <div id="searchKmMsg" class="search-msg" style="display:none"></div>
       <div id="searchKmResult" style="display:none;margin-top:12px"></div>
     </div>
   </div>
 
+  <!-- MAPA INTERATIVO -->
+  <div class="section-block" id="mapSection" style="display:none">
+    <div class="section-header">
+      <i class="fas fa-map" style="width:16px;height:16px"></i>
+      Mapa Interativo (Leaflet + OSM)
+    </div>
+    <div class="map-container" id="mapContainer"></div>
+    <div class="badge-info">
+      <i class="fas fa-info-circle"></i> Clique em postes para ver detalhes
+    </div>
+  </div>
+
+  <!-- PROXIMIDADE & GPS -->
   <div class="section-block" style="border-color: rgba(16,185,129,0.3);">
     <div class="section-header proximity-title">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-      Seção de Proximidade & GPS Atual
+      Proximidade & GPS Atual
     </div>
 
     <div id="targetLock" class="target-lock">
@@ -452,28 +270,24 @@ img,video{display:block;max-width:100%}
     </div>
 
     <div class="km-hero">
-      <p class="km-label">KM aproximado atual</p>
+      <p class="km-label">KM aproximado</p>
       <p class="km-value" id="kmVal">—</p>
       <p class="km-sub" id="kmSource"></p>
     </div>
 
     <div id="gpsStatus" class="gps bad">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>
-      </svg>
+      <i class="fas fa-satellite"></i>
       GPS · BUSCANDO SINAL
     </div>
 
     <div class="card">
       <button id="btnSend" class="ctrl-send" disabled>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>
-        </svg>
+        <i class="fas fa-share-nodes"></i>
         Enviar lista WhatsApp
       </button>
       <div class="ctrl-row">
         <label class="ctrl-label">
-          Proximidade
+          <span>Proximidade</span>
           <select class="ctrl-select" id="qty">
             <option value="1">1</option>
             <option value="5">5</option>
@@ -484,7 +298,7 @@ img,video{display:block;max-width:100%}
           </select>
         </label>
         <label class="ctrl-label">
-          <input type="checkbox" class="ctrl-chk" id="chkMaps" checked> Maps
+          <input type="checkbox" class="ctrl-chk" id="chkMap"> Mapa Leaflet
         </label>
       </div>
     </div>
@@ -494,12 +308,24 @@ img,video{display:block;max-width:100%}
     </div>
   </div>
 
+  <!-- HISTÓRICO -->
+  <div class="section-block">
+    <div class="section-header">
+      <i class="fas fa-history" style="width:16px"></i>
+      Histórico (últimas buscas)
+    </div>
+    <div class="history-list" id="historyList" style="min-height:60px;display:flex;align-items:center;justify-content:center;color:var(--muted)">
+      Nenhuma busca registrada
+    </div>
+  </div>
+
 </div>
 
 <div class="toast" id="toast" aria-live="polite"></div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-const ACC_G=15,ACC_Y=35;
+const ACC_G=15,ACC_Y=35,MAX_HISTORY=20;
 const norm=s=>String(s||'').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^A-Z0-9_ ]+/g,' ').replace(/\s+/g,' ');
 const parsePt=v=>{const s=String(v??'').trim();return/,\d+$/.test(s)?Number(s.replace(/\./g,'').replace(',','.')):Number(s)};
 const hav=(a,b,c,d)=>{const p=Math.PI/180,x=.5-Math.cos((c-a)*p)/2+Math.cos(a*p)*Math.cos(c*p)*(1-Math.cos((d-b)*p))/2;return 12742000*Math.asin(Math.sqrt(x))};
@@ -509,156 +335,67 @@ const nowBR=()=>new Date().toLocaleString('pt-BR').toUpperCase();
 function findCol(h,cs){const m=h.map(norm);for(const c of cs){const i=m.indexOf(norm(c));if(i>=0)return i}return-1}
 function vibrate(ms){try{navigator.vibrate?.(ms)}catch{}}
 
-const municipioCache = new Map();
-const municipioPending = new Map();
+// ==== CACHE & PERSISTÊNCIA ====
+const municipioCache=new Map(),municipioPending=new Map();
+let searchHistory=JSON.parse(localStorage.getItem('searchHistory')||'[]');
+let map=null,mapMarkers=[];
 
-function readableMunicipio(value) {
-  const raw = String(value || '').trim();
-  if (!raw) return '';
-  const cleaned = raw
-    .replace(/\s*[-–—].*$/, '')
-    .replace(/\s+\(.+\)$/, '')
-    .replace(/\b(?:municipio|município|cidade|city|town|village|bairro)\b/gi, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-  return cleaned || raw;
+// ==== MUNICIPIOS (múltiplos providers) ====
+async function fetchJson(url,headers={},timeoutMs=7000){
+  const controller=new AbortController();
+  const timeout=setTimeout(()=>controller.abort(),timeoutMs);
+  try{const res=await fetch(url,{headers:{Accept:'application/json','Accept-Language':'pt-BR,pt;q=0.9,en;q=0.8',...headers},signal:controller.signal});if(!res.ok)throw new Error(`HTTP ${res.status}`);return res.json()}finally{clearTimeout(timeout)}
 }
 
-function extractMunicipioFromReverseData(data) {
-  if (!data) return '';
-  const address = data.address || {};
-  const candidates = [
-    address.municipality,
-    address.city,
-    address.town,
-    address.village,
-    address.locality,
-    address.suburb,
-    address.county,
-    data.locality,
-    data.city,
-    data.name,
-    data.display_name
-  ];
-  for (const c of candidates) {
-    const v = readableMunicipio(c);
-    if (v) return v;
-  }
-  return '';
-}
-
-async function fetchJson(url, headers = {}, timeoutMs = 7000) {
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    const res = await fetch(url, {
-      headers: {
-        Accept: 'application/json',
-        'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
-        ...headers
-      },
-      signal: controller.signal
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    return res.json();
-  } finally {
-    clearTimeout(timeout);
-  }
-}
-
-async function resolveMunicipio(lat, lon) {
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return 'Município não disponível';
-  const key = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
-  if (municipioCache.has(key)) return municipioCache.get(key);
-  if (municipioPending.has(key)) return municipioPending.get(key);
-
-  const run = async () => {
-    const providers = [
-      async () => {
-        const data = await fetchJson(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&localityLanguage=pt`);
-        const municipio = extractMunicipioFromReverseData(data);
-        if (municipio) return municipio;
-        throw new Error('BigDataCloud sem município');
-      },
-      async () => {
-        const data = await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1&accept-language=pt-BR`);
-        const municipio = extractMunicipioFromReverseData(data);
-        if (municipio) return municipio;
-        throw new Error('Nominatim sem município');
-      },
-      async () => {
-        const data = await fetchJson(`https://geocode.maps.co/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
-        const municipio = extractMunicipioFromReverseData(data);
-        if (municipio) return municipio;
-        throw new Error('Maps.co sem município');
-      }
+async function resolveMunicipio(lat,lon){
+  if(!Number.isFinite(lat)||!Number.isFinite(lon))return'Município não disponível';
+  const key=`${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
+  if(municipioCache.has(key))return municipioCache.get(key);
+  if(municipioPending.has(key))return municipioPending.get(key);
+  const run=async()=>{
+    const providers=[
+      async()=>{const data=await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1`);return data.address?.municipality||data.address?.city||'';},
+      async()=>{const data=await fetchJson(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=pt`);return data.locality||data.city||'';},
+      async()=>{const data=await fetchJson(`https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}`);return data.address?.city||data.name||'';}
     ];
-
-    for (const provider of providers) {
-      try {
-        const nome = await provider();
-        municipioCache.set(key, nome);
-        return nome;
-      } catch (e) {}
-    }
-
-    const fallback = 'Município não disponível';
-    municipioCache.set(key, fallback);
-    return fallback;
+    for(const p of providers){try{const n=await p();if(n){municipioCache.set(key,n);return n}}catch(e){}}
+    const fallback='Município não disponível';municipioCache.set(key,fallback);return fallback;
   };
-
-  const promise = run();
-  municipioPending.set(key, promise);
-  try {
-    return await promise;
-  } finally {
-    municipioPending.delete(key);
-  }
+  const promise=run();municipioPending.set(key,promise);try{return await promise}finally{municipioPending.delete(key)}
 }
 
-function setMunicipioLabel(el, value) {
-  if (!el) return;
-  const txt = value ? `Município: ${value}` : 'Município: não disponível';
-  el.textContent = txt;
+// ==== HISTORY ====
+function addToHistory(id,km=''){
+  const item={id,km,time:new Date().toISOString()};
+  searchHistory.unshift(item);
+  if(searchHistory.length>MAX_HISTORY)searchHistory.pop();
+  localStorage.setItem('searchHistory',JSON.stringify(searchHistory));
+  renderHistory();
 }
 
-function hydrateMunicipioTargets() {
-  document.querySelectorAll('[data-muni-lat]').forEach(async (el) => {
-    const lat = Number(el.dataset.muniLat);
-    const lon = Number(el.dataset.muniLon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
-      setMunicipioLabel(el, 'não disponível');
-      return;
-    }
-
-    const key = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
-    if (municipioCache.has(key)) {
-      setMunicipioLabel(el, municipioCache.get(key));
-      return;
-    }
-
-    setMunicipioLabel(el, 'consultando...');
-    const nome = await resolveMunicipio(lat, lon);
-    setMunicipioLabel(el, nome);
-  });
+function renderHistory(){
+  const list=document.getElementById('historyList');
+  if(!searchHistory.length){list.innerHTML='<span style="color:var(--muted)">Nenhuma busca registrada</span>';return}
+  list.innerHTML=searchHistory.map((h,i)=>`<div class="history-item" onclick="restoreSearch('${h.id}','${h.km}')"><span><strong>${h.id||'KM '+h.km}</strong></span><span class="history-time">${new Date(h.time).toLocaleTimeString('pt-BR')}</span></div>`).join('');
 }
 
-let posts=[],kmDB=[],pos=null,searchItem=null,searchKmItems=[],renderedKey='',apoioInit=false;
-let curSpeed=0;
+function restoreSearch(id,km){
+  if(id){document.getElementById('inputId').value=id;searchId()}
+  else if(km){document.getElementById('inputKm').value=km;searchKm()}
+}
 
+// ==== TOAST ====
 let _tt=null;
 function showToast(msg,type='ok'){
   const el=document.getElementById('toast');
-  const icons={
-    ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',
-    err:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>'
-  };
+  const icons={ok:'<i class="fas fa-check-circle"></i>',err:'<i class="fas fa-exclamation-circle"></i>'};
   el.className='toast '+type;
   el.innerHTML=(icons[type]||'')+msg;
   clearTimeout(_tt);
   requestAnimationFrame(()=>{el.classList.add('show');_tt=setTimeout(()=>el.classList.remove('show'),3000)});
 }
 
+// ==== GPS BADGE ====
 function gpsBadge(el,p,err){
   const a=p?.acc;let cls='bad',txt;
   if(err)txt=err;
@@ -667,8 +404,34 @@ function gpsBadge(el,p,err){
   else if(a<=ACC_Y){cls='warn';txt=`GPS · PRECISÃO MÉDIA ${fmtAcc(a)}`}
   else txt=`GPS · Sinal Fraco ${fmtAcc(a)}`;
   el.className='gps '+cls;
-  el.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>${txt}`;
+  el.textContent=txt;
 }
+
+// ==== MAPA LEAFLET (otimizado) ====
+function initMap(){
+  if(map)return;
+  const container=document.getElementById('mapContainer');
+  if(!container)return;
+  map=L.map(container).setView([-23.55,-46.63],13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,attribution:''}).addTo(map);
+}
+
+function updateMapMarkers(items){
+  if(!map)initMap();
+  mapMarkers.forEach(m=>map.removeLayer(m));
+  mapMarkers=[];
+  items.forEach((p,i)=>{
+    const icon=L.divIcon({
+      html:`<div style="background:#10b981;color:#fff;width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:12px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3)">${i+1}</div>`,
+      iconSize:[30,30],className:''
+    });
+    const m=L.marker([p.lat,p.lon],{icon}).bindPopup(`<strong>${p.id}</strong><br/>KM: ${p.km||'—'}<br/><button onclick="searchId.call(null)" style="width:100%;padding:4px;background:#10b981;color:white;border:none;border-radius:4px;cursor:pointer">Ver Detalhes</button>`).addTo(map);
+    mapMarkers.push(m);
+  });
+  if(items.length>0){const bounds=L.latLngBounds(items.map(p=>[p.lat,p.lon]));map.fitBounds(bounds,{padding:[40,40]});}}
+
+// ==== DADOS ====
+let posts=[],kmDB=[],pos=null,searchItem=null,searchKmItems=[],renderedKey='',apoioInit=false;
 
 async function loadPosts(){
   try{
@@ -680,14 +443,7 @@ async function loadPosts(){
     const lines=t.split(/\r?\n/).filter(l=>l.trim());
     const h=lines.shift().split(';');
     const iId=findCol(h,['id do nox','idnox','id']),iLat=findCol(h,['latitude','lat']),iLon=findCol(h,['longitude','lon','long']);
-    posts=lines.map(l=>{
-      const r=l.split(';');
-      return {
-        id:String(r[iId]||'').trim().toUpperCase(),
-        lat:parsePt(r[iLat]),
-        lon:parsePt(r[iLon])
-      };
-    }).filter(p=>p.id&&Number.isFinite(p.lat)&&Number.isFinite(p.lon));
+    posts=lines.map(l=>{const r=l.split(';');return{id:String(r[iId]||'').trim().toUpperCase(),lat:parsePt(r[iLat]),lon:parsePt(r[iLon])};}).filter(p=>p.id&&Number.isFinite(p.lat)&&Number.isFinite(p.lon));
     renderApoio();
   }catch(e){}
 }
@@ -701,22 +457,15 @@ async function loadKm(){
     const lines=t.split(/\r?\n/).filter(l=>l.trim());
     const h=lines.shift().split(';');
     const iKm=findCol(h,['km']),iLat=findCol(h,['lat','latitude']),iLon=findCol(h,['lon','long','longitude']);
-    kmDB=lines.map(l=>{
-      const r=l.split(';');
-      return {km:parsePt(r[iKm]),lat:parsePt(r[iLat]),lon:parsePt(r[iLon])};
-    }).filter(p=>Number.isFinite(p.km)&&Number.isFinite(p.lat)&&Number.isFinite(p.lon));
-    updateKm();
-    renderApoio();
+    kmDB=lines.map(l=>{const r=l.split(';');return{km:parsePt(r[iKm]),lat:parsePt(r[iLat]),lon:parsePt(r[iLon])};}).filter(p=>Number.isFinite(p.km)&&Number.isFinite(p.lat)&&Number.isFinite(p.lon));
+    updateKm();renderApoio();
   }catch(e){}
 }
 
 function nearestKm(){
   if(!pos||!kmDB.length)return null;
   let best=null,bd=Infinity;
-  for(const p of kmDB){
-    const d=hav(pos.lat,pos.lon,p.lat,p.lon);
-    if(d<bd){bd=d;best=p}
-  }
+  for(const p of kmDB){const d=hav(pos.lat,pos.lon,p.lat,p.lon);if(d<bd){bd=d;best=p}}
   return best;
 }
 
@@ -726,338 +475,117 @@ async function updateKm(){
     const v=(Math.round(b.km*100)/100).toFixed(2).replace('.',',');
     document.getElementById('kmVal').textContent=v;
     const s=document.getElementById('kmSource');
-    if(s){
-      const mun = pos ? await resolveMunicipio(pos.lat, pos.lon) : 'Município não disponível';
-      s.textContent = `Referência: ${kmDB.length} pontos • ${mun}`;
-    }
-  }
+    if(s){const mun=pos?await resolveMunicipio(pos.lat,pos.lon):'Município não disponível';s.textContent=`Referência: ${kmDB.length} pontos • ${mun}`;}}
 }
 
 function findPostExactKm(post){
-  if(!kmDB.length)return '---';
-  let best=null, bd=Infinity;
-  for(const pt of kmDB){
-    const d=hav(post.lat, post.lon, pt.lat, pt.lon);
-    if(d<bd){bd=d;best=pt;}
-  }
-  return best ? (Math.round(best.km*1000)/1000).toFixed(3).replace('.',',') : '---';
+  if(!kmDB.length)return'---';
+  let best=null,bd=Infinity;
+  for(const pt of kmDB){const d=hav(post.lat,post.lon,pt.lat,pt.lon);if(d<bd){bd=d;best=pt}}
+  return best?(Math.round(best.km*1000)/1000).toFixed(3).replace('.',','):'---';
 }
 
 function initApoio(){
   if(apoioInit)return;
   apoioInit=true;
-  loadPosts();
-  loadKm();
-  if('geolocation'in navigator)navigator.geolocation.watchPosition(p=>{
-    pos={lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy};
-    curSpeed=p.coords.speed?Math.round(p.coords.speed*3.6):0;
-    gpsBadge(document.getElementById('gpsStatus'),pos);
-    renderApoio();
-    updateKm();
-    updateSearchDist();
-    updateSearchKmDist();
-  },null,{enableHighAccuracy:true,maximumAge:0,timeout:10000});
+  loadPosts();loadKm();renderHistory();
+  if('geolocation'in navigator)navigator.geolocation.watchPosition(p=>{pos={lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy};gpsBadge(document.getElementById('gpsStatus'),pos);renderApoio();updateKm();},null,{enableHighAccuracy:true,maximumAge:0,timeout:10000});
 }
 
+// ==== BUSCA ID ====
 function searchId(){
   const raw=document.getElementById('inputId').value.trim();
-  const msg=document.getElementById('searchMsg'),
-        res=document.getElementById('searchResult');
-
-  if(!raw || raw.length !== 8 || !/^\d{8}$/.test(raw)){
-    msg.style.display='flex';
-    msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>ID DEVE TER EXATAMENTE 8 DÍGITOS.';
-    searchItem=null;res.style.display='none';checkLock();vibrate(50);return;
-  }
-  if(!posts.length){
-    msg.style.display='flex';
-    msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Carregando dados, tente novamente...';
-    return;
-  }
+  const msg=document.getElementById('searchMsg'),res=document.getElementById('searchResult');
+  if(!raw||raw.length!==8||!/^\d{8}$/.test(raw)){msg.style.display='flex';msg.textContent='ID DEVE TER EXATAMENTE 8 DÍGITOS';searchItem=null;res.style.display='none';vibrate(50);return}
+  if(!posts.length){msg.style.display='flex';msg.textContent='Carregando dados...';return}
   const found=posts.find(p=>p.id===raw);
-  if(!found){
-    msg.style.display='flex';
-    msg.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>ID "${raw}" NÃO ENCONTRADO.`;
-    searchItem=null;res.style.display='none';checkLock();vibrate(50);return;
-  }
-  searchItem=found;
-  msg.style.display='none';
-  renderSearch();
-  showToast('Poste encontrado: '+found.id);
-  vibrate([10,50,10]);
+  if(!found){msg.style.display='flex';msg.textContent=`ID "${raw}" NÃO ENCONTRADO`;searchItem=null;res.style.display='none';vibrate(50);return}
+  searchItem=found;addToHistory(found.id);msg.style.display='none';renderSearch();showToast('Poste encontrado: '+found.id);vibrate([10,50,10]);
 }
 
-function clearId(){
-  document.getElementById('inputId').value='';
-  document.getElementById('searchMsg').style.display='none';
-  document.getElementById('searchResult').style.display='none';
-  searchItem=null;
-  checkLock();
-}
-
-function updateSearchDist(){
-  if(!searchItem||!pos)return;
-  const el=document.getElementById('srch-dist');
-  const dist=hav(pos.lat,pos.lon,searchItem.lat,searchItem.lon);
-  if(el)el.textContent='Distância: '+range(dist,pos.acc);
-  checkLock();
-}
+function clearId(){document.getElementById('inputId').value='';document.getElementById('searchMsg').style.display='none';document.getElementById('searchResult').style.display='none';searchItem=null}
 
 function renderSearch(){
   if(!searchItem)return;
   const res=document.getElementById('searchResult');
   let dt='Aguardando GPS...';
-  if(pos){
-    const dist=hav(pos.lat,pos.lon,searchItem.lat,searchItem.lon);
-    dt='Distância: '+range(dist,pos.acc);
-    checkLock();
-  }
-  const exactKm = findPostExactKm(searchItem);
+  if(pos){const dist=hav(pos.lat,pos.lon,searchItem.lat,searchItem.lon);dt='Distância: '+range(dist,pos.acc)}
+  const exactKm=findPostExactKm(searchItem);
   res.style.display='block';
-  res.innerHTML=`<div class="post searched">
-    <div class="post-top">
-      <div class="post-info">
-        <p class="post-id">OS / ID: <span>${searchItem.id}</span></p>
-        <p class="post-dist" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p>
-        <p class="post-dist" id="srch-dist">${dt}</p>
-        <p class="post-muni" data-muni-lat="${searchItem.lat}" data-muni-lon="${searchItem.lon}">Município: consultando...</p>
-        <p class="post-coords">Coordenadas: ${searchItem.lat.toFixed(6)}, ${searchItem.lon.toFixed(6)}</p>
-      </div>
-      <button class="post-wa-btn" onclick="sendSingleWhatsApp('${searchItem.id}', ${searchItem.lat}, ${searchItem.lon})" title="Enviar este item por WhatsApp">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5"/>
-        </svg>
-      </button>
-    </div>
-    <div class="post-map-container">
-      <iframe class="post-map" src="https://maps.google.com/maps?q=${searchItem.lat},${searchItem.lon}&t=k&z=19&ie=UTF8&iwloc=&output=embed" loading="lazy"></iframe>
-    </div>
-  </div>`;
-  hydrateMunicipioTargets();
+  res.innerHTML=`<div class="post searched"><div class="post-top"><div class="post-info"><p class="post-id">ID: <span>${searchItem.id}</span></p><p class="post-dist" style="color:var(--green2);font-weight:900">KM Exato: ${exactKm}</p><p class="post-dist">${dt}</p><p class="post-muni">Município: <span id="muni-${searchItem.id}">consultando...</span></p><p class="post-coords">Coordenadas: ${searchItem.lat.toFixed(6)}, ${searchItem.lon.toFixed(6)}</p></div><button class="post-wa-btn" onclick="sendSingleWhatsApp('${searchItem.id}', ${searchItem.lat}, ${searchItem.lon})" title="WhatsApp"><i class="fab fa-whatsapp"></i></button></div><div class="post-map-container" id="map-${searchItem.id}"></div></div>`;
+  resolveMunicipio(searchItem.lat,searchItem.lon).then(m=>{const el=document.getElementById('muni-'+searchItem.id);if(el)el.textContent=m});
+  if(document.getElementById('chkMap').checked){setTimeout(()=>{const mapEl=document.getElementById('map-'+searchItem.id);if(mapEl){const miniMap=L.map(mapEl).setView([searchItem.lat,searchItem.lon],18);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(miniMap);L.marker([searchItem.lat,searchItem.lon]).addTo(miniMap).bindPopup(searchItem.id)}},100)}
 }
 
+// ==== BUSCA KM ====
 function searchKm(){
   const rawVal=document.getElementById('inputKm').value;
   const targetKm=parsePt(rawVal);
   const msg=document.getElementById('searchKmMsg'),res=document.getElementById('searchKmResult');
-  
   if(isNaN(targetKm)){clearKm();return}
-  if(!posts.length || !kmDB.length){
-    msg.style.display='flex';
-    msg.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>Carregando bases de dados...';
-    return;
-  }
-
-  const kmMin=Math.min(...kmDB.map(pt=>pt.km));
-  const kmMax=Math.max(...kmDB.map(pt=>pt.km));
-  if(targetKm < kmMin || targetKm > kmMax){
-    msg.style.display='flex';
-    msg.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>KM ${rawVal} FORA DO INTERVALO CADASTRADO.`;
-    searchKmItems=[];res.style.display='none';
-    return;
-  }
-  
-  let filteredKmDB = kmDB;
-  const isInteger = Number.isInteger(targetKm) || targetKm === Math.floor(targetKm);
-  
-  if (isInteger) {
-    filteredKmDB = kmDB.filter(pt => pt.km >= targetKm && pt.km < targetKm + 1);
-  } else {
-    filteredKmDB = kmDB.filter(pt => pt.km >= targetKm);
-  }
-
-  let bestKmPt=null, minKmDiff=Infinity;
-  for(const pt of filteredKmDB){
-    const diff=Math.abs(pt.km - targetKm);
-    if(diff<minKmDiff){minKmDiff=diff;bestKmPt=pt;}
-  }
-
-  if(!bestKmPt){
-    msg.style.display='flex';
-    msg.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>KM ${rawVal} NÃO ENCONTRADO.`;
-    searchKmItems=[];res.style.display='none';
-    return;
-  }
-
-  const sortedPosts = posts.map(p => ({
-    ...p,
-    d: hav(bestKmPt.lat, bestKmPt.lon, p.lat, p.lon)
-  })).sort((a, b) => a.d - b.d).slice(0, 10);
-
-  if(!sortedPosts.length){
-    msg.style.display='flex';
-    msg.innerHTML=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>Nenhum poste próximo ao KM ${rawVal}.`;
-    searchKmItems=[];res.style.display='none';
-    return;
-  }
-
-  searchKmItems = sortedPosts;
-  msg.style.display='none';
-  renderSearchKm();
-  showToast('10 postes mais próximos do KM '+rawVal);
-  vibrate([10,50,10]);
+  if(!posts.length||!kmDB.length){msg.style.display='flex';msg.textContent='Carregando bases de dados...';return}
+  const kmMin=Math.min(...kmDB.map(pt=>pt.km)),kmMax=Math.max(...kmDB.map(pt=>pt.km));
+  if(targetKm<kmMin||targetKm>kmMax){msg.style.display='flex';msg.textContent=`KM ${rawVal} FORA DO INTERVALO CADASTRADO`;searchKmItems=[];res.style.display='none';return}
+  let filteredKmDB=kmDB;
+  const isInteger=Number.isInteger(targetKm)||targetKm===Math.floor(targetKm);
+  if(isInteger)filteredKmDB=kmDB.filter(pt=>pt.km>=targetKm&&pt.km<targetKm+1);else filteredKmDB=kmDB.filter(pt=>pt.km>=targetKm);
+  let bestKmPt=null,minKmDiff=Infinity;
+  for(const pt of filteredKmDB){const diff=Math.abs(pt.km-targetKm);if(diff<minKmDiff){minKmDiff=diff;bestKmPt=pt}}
+  if(!bestKmPt){msg.style.display='flex';msg.textContent=`KM ${rawVal} NÃO ENCONTRADO`;searchKmItems=[];res.style.display='none';return}
+  const sortedPosts=posts.map(p=>({...p,d:hav(bestKmPt.lat,bestKmPt.lon,p.lat,p.lon),km:findPostExactKm(p)})).sort((a,b)=>a.d-b.d).slice(0,10);
+  if(!sortedPosts.length){msg.style.display='flex';msg.textContent=`Nenhum poste próximo ao KM ${rawVal}`;searchKmItems=[];res.style.display='none';return}
+  searchKmItems=sortedPosts;addToHistory('',rawVal);msg.style.display='none';renderSearchKm();showToast('10 postes encontrados: KM '+rawVal);vibrate([10,50,10]);
+  if(document.getElementById('chkMap').checked){setTimeout(()=>updateMapMarkers(sortedPosts.map(p=>({id:p.id,lat:p.lat,lon:p.lon,km:p.km}))),500)}
 }
 
-function clearKm(){
-  document.getElementById('inputKm').value='';
-  document.getElementById('searchKmMsg').style.display='none';
-  document.getElementById('searchKmResult').style.display='none';
-  searchKmItems=[];
-}
-
-function updateSearchKmDist(){
-  if(!searchKmItems.length||!pos)return;
-  searchKmItems.forEach((item, idx)=>{
-    const el=document.getElementById('srch-km-dist-'+idx);
-    if(el)el.textContent='Distância: '+range(hav(pos.lat,pos.lon,item.lat,item.lon),pos.acc);
-  });
-}
+function clearKm(){document.getElementById('inputKm').value='';document.getElementById('searchKmMsg').style.display='none';document.getElementById('searchKmResult').style.display='none';searchKmItems=[]}
 
 function renderSearchKm(){
   if(!searchKmItems.length)return;
   const res=document.getElementById('searchKmResult');
   res.style.display='block';
-  
-  let htmlContent = '<div style="display:flex;flex-direction:column;gap:12px">';
-  searchKmItems.forEach((item, idx)=>{
+  let html='<div style="display:flex;flex-direction:column;gap:12px">';
+  searchKmItems.forEach((item,idx)=>{
     let dt='Aguardando GPS...';
-    if(pos){
-      dt='Distância: '+range(hav(pos.lat,pos.lon,item.lat,item.lon),pos.acc);
-    }
-    const exactKm = findPostExactKm(item);
-    htmlContent += `
-      <div class="post searched">
-        <div class="post-top">
-          <div class="post-info">
-            <p class="post-id">#${idx+1} - ID: <span>${item.id}</span></p>
-            <p class="post-dist" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p>
-            <p class="post-dist" id="srch-km-dist-${idx}">${dt}</p>
-            <p class="post-muni" data-muni-lat="${item.lat}" data-muni-lon="${item.lon}">Município: consultando...</p>
-            <p class="post-coords">Coordenadas: ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p>
-          </div>
-          <button class="post-wa-btn" onclick="sendSingleWhatsApp('${item.id}', ${item.lat}, ${item.lon})" title="Enviar este item por WhatsApp">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5"/>
-            </svg>
-          </button>
-        </div>
-        <div class="post-map-container">
-          <iframe class="post-map" src="https://maps.google.com/maps?q=${item.lat},${item.lon}&t=k&z=19&ie=UTF8&iwloc=&output=embed" loading="lazy"></iframe>
-        </div>
-      </div>`;
+    if(pos)dt='Distância: '+range(hav(pos.lat,pos.lon,item.lat,item.lon),pos.acc);
+    html+=`<div class="post searched"><div class="post-top"><div class="post-info"><p class="post-id">#${idx+1} ID: <span>${item.id}</span></p><p class="post-dist" style="color:var(--green2);font-weight:900">KM: ${item.km}</p><p class="post-dist">${dt}</p><p class="post-muni">Município: <span id="muni-km-${item.id}">consultando...</span></p><p class="post-coords">${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p></div><button class="post-wa-btn" onclick="sendSingleWhatsApp('${item.id}', ${item.lat}, ${item.lon})" title="WhatsApp"><i class="fab fa-whatsapp"></i></button></div></div>`;
+    resolveMunicipio(item.lat,item.lon).then(m=>{const el=document.getElementById('muni-km-'+item.id);if(el)el.textContent=m});
   });
-  htmlContent += '</div>';
-  res.innerHTML = htmlContent;
-  hydrateMunicipioTargets();
+  html+='</div>';res.innerHTML=html;
 }
 
-function checkLock(){
-  const b=document.getElementById('targetLock');
-  if(!searchItem||!pos){b.classList.remove('on');return}
-  const d=hav(pos.lat,pos.lon,searchItem.lat,searchItem.lon);
-  if(d<=(5+(pos.acc||10))){
-    b.classList.add('on');
-    document.getElementById('targetLockSub').textContent=`ID ALVO: ${searchItem.id} · DISTÂNCIA EST. ~${Math.round(d)}M`;
-    vibrate([30,100,30]);
-  }else{
-    b.classList.remove('on');
-  }
-}
-
-function sendSingleWhatsApp(id, lat, lon) {
-  let tx = `📍 *LOCALIZAÇÃO DE POSTE*\n`;
-  tx += `Data/Hora: ${nowBR()}\n\n`;
-  tx += `*ID:* ${id}\n`;
-  tx += `Coordenadas: ${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)}\n`;
-  tx += `🗺️ https://maps.google.com/?q=${Number(lat).toFixed(6)},${Number(lon).toFixed(6)}`;
-  window.open('https://wa.me/?text=' + encodeURIComponent(tx), '_blank', 'noopener');
-  showToast(`Poste ${id} enviado para o WhatsApp`);
+function sendSingleWhatsApp(id,lat,lon){
+  let tx=`📍 *LOCALIZAÇÃO DE POSTE*\n`;
+  tx+=`Data/Hora: ${nowBR()}\n\n`;
+  tx+=`*ID:* ${id}\n`;
+  tx+=`Coordenadas: ${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)}\n`;
+  tx+=`🗺️ https://maps.google.com/?q=${Number(lat).toFixed(6)},${Number(lon).toFixed(6)}`;
+  window.open('https://wa.me/?text='+encodeURIComponent(tx),'_blank','noopener');
+  showToast(`Poste ${id} enviado para WhatsApp`);
 }
 
 function renderApoio(){
   if(!pos||!posts.length)return;
-  if(searchItem)updateSearchDist();
-  if(searchKmItems.length)updateSearchKmDist();
-
   const qty=Number(document.getElementById('qty').value||10);
-  const items=posts.map(p=>{
-    const d=hav(pos.lat,pos.lon,p.lat,p.lon);
-    return {id:p.id,lat:p.lat,lon:p.lon,d};
-  }).sort((a,b)=>a.d-b.d).slice(0,qty);
-
+  const items=posts.map(p=>({id:p.id,lat:p.lat,lon:p.lon,d:hav(pos.lat,pos.lon,p.lat,p.lon),km:findPostExactKm(p)})).sort((a,b)=>a.d-b.d).slice(0,qty);
   const key=items.map(i=>i.id).join(',');
   const list=document.getElementById('postList');
-
-  if(key===renderedKey){
-    items.forEach((o,i)=>{
-      const el=document.getElementById('dist-'+i);
-      const kmEl=document.getElementById('km-exato-'+i);
-      if(el)el.textContent='Distância: '+range(o.d,pos.acc);
-      if(kmEl && kmDB.length)kmEl.textContent='KM Exato: '+findPostExactKm(o);
-    });
-    document.getElementById('btnSend').disabled=false;
-    return;
-  }
-
+  if(key===renderedKey){document.getElementById('btnSend').disabled=false;return}
   renderedKey=key;
-  const fragment = document.createDocumentFragment();
-
-  items.forEach((o,i)=>{
-    const exactKm = findPostExactKm(o);
-    const div=document.createElement('div');
-    div.className='post'+(i===0?' near':'');
-    div.innerHTML=`<div class="post-top">
-      <input type="checkbox" class="post-chk" value="${o.id}" data-lat="${o.lat}" data-lon="${o.lon}" checked>
-      <div class="post-info">
-        <p class="post-id">Poste: <span>${o.id}</span></p>
-        <p class="post-dist" id="km-exato-${i}" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p>
-        <p class="post-dist" id="dist-${i}">Distância: ${range(o.d,pos.acc)}</p>
-        <p class="post-muni" data-muni-lat="${o.lat}" data-muni-lon="${o.lon}">Município: consultando...</p>
-      </div>
-      <button class="post-wa-btn" onclick="sendSingleWhatsApp('${o.id}', ${o.lat}, ${o.lon})" title="Enviar este item por WhatsApp">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5"/>
-        </svg>
-      </button>
-    </div>
-    <div class="post-map-container">
-      <iframe class="post-map" src="https://maps.google.com/maps?q=${o.lat},${o.lon}&t=k&z=19&ie=UTF8&iwloc=&output=embed" loading="lazy"></iframe>
-    </div>`;
-    fragment.appendChild(div);
-  });
-
-  list.innerHTML='';
-  list.appendChild(fragment);
-  hydrateMunicipioTargets();
+  let html='';
+  items.forEach((o,i)=>{const dt=range(o.d,pos.acc);html+=`<div class="post near"><div class="post-top"><div class="post-info"><p class="post-id">#${i+1} ID: <span>${o.id}</span></p><p class="post-dist">Distância: ${dt}</p><p class="post-dist" style="color:var(--green2);font-weight:900">KM: ${o.km}</p></div><button class="post-wa-btn" onclick="sendSingleWhatsApp('${o.id}', ${o.lat}, ${o.lon})" title="WhatsApp"><i class="fab fa-whatsapp"></i></button></div></div>`;});
+  list.innerHTML=html;
   document.getElementById('btnSend').disabled=false;
+  if(document.getElementById('chkMap').checked){document.getElementById('mapSection').style.display='flex';setTimeout(()=>updateMapMarkers(items),300)}
 }
 
-document.getElementById('btnSend').onclick=()=>{
-  if(!pos)return;
-  const chks=document.querySelectorAll('.post-chk:checked');
-  let items=[];
-  if(chks.length){
-    chks.forEach(c=>items.push({id:c.value,lat:parseFloat(c.dataset.lat),lon:parseFloat(c.dataset.lon)}));
-  }else{
-    const qty=Number(document.getElementById('qty').value||10);
-    items=posts.map(p=>({...p,d:hav(pos.lat,pos.lon,p.lat,p.lon)})).sort((a,b)=>a.d-b.d).slice(0,qty).map(o=>({id:o.id,lat:o.lat,lon:o.lon}));
-  }
-  let tx=`📍 *LISTA DE LOCALIZAÇÃO DE POSTES*\nData/Hora: ${nowBR()}\nGPS Atual: ${pos.lat.toFixed(6)}, ${pos.lon.toFixed(6)} (${fmtAcc(pos.acc)})\n\n`;
-  items.forEach((o,i)=>{
-    const exactKm = findPostExactKm(o);
-    tx+=`${i+1}. *ID:* ${o.id} (*KM:* ${exactKm})\n`;
-    if(document.getElementById('chkMaps').checked)tx+=`   🗺️ https://maps.google.com/?q=${o.lat.toFixed(6)},${o.lon.toFixed(6)}\n`;
-  });
-  window.open('https://wa.me/?text='+encodeURIComponent(tx),'_blank','noopener');
-  showToast(`${items.length} postes enviados`);
-  vibrate(15);
-};
-
-document.getElementById('qty').onchange=()=>{renderedKey='';renderApoio()};
-
-window.addEventListener('DOMContentLoaded', () => {
+// ==== INIT ====
+document.addEventListener('DOMContentLoaded',()=>{
   initApoio();
+  document.getElementById('qty').addEventListener('change',renderApoio);
+  document.getElementById('chkMap').addEventListener('change',()=>{if(this.checked){document.getElementById('mapSection').style.display='flex';if(searchKmItems.length)updateMapMarkers(searchKmItems)}else{document.getElementById('mapSection').style.display='none'}});
 });
 </script>
+
 </body>
 </html>
