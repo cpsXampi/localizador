@@ -1,27 +1,34 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <meta name="theme-color" content="#0b1020">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>Apoio Localização</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
+  <meta name="theme-color" content="#0b1020" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <title>Apoio Localização Premium</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
   <style>
     :root {
       --bg:#050816; --bg2:#090f1f; --surface:#0d1224; --surface2:#111731; --surface3:#171d3d;
-      --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.16); --border3:rgba(255,255,255,.18);
-      --accent:#ffd600; --accent2:#ffe44d; --green:#10b981; --green2:#34d399; --violet:#5b21ff; --violet2:#7c3aed; --red:#ef4444; --warn:#f59e0b;
-      --text:#f3f4f6; --text2:#d1d5db; --text3:#9ca3af; --muted:#6b7280; --dim:#4b5563; --dimmer:#1f2937;
+      --border:rgba(255,255,255,.08); --border2:rgba(255,255,255,.14); --border3:rgba(255,255,255,.18);
+      --accent:#ffd600; --accent2:#ffe44d; --green:#10b981; --green2:#34d399; --green3:#059669;
+      --violet:#5b21ff; --violet2:#7c3aed; --red:#ef4444; --warn:#f59e0b; --text:#f3f4f6; --text2:#d1d5db; --text3:#9ca3af;
+      --muted:#6b7280; --dim:#4b5563; --dimmer:#1f2937; --shadow:rgba(15,23,42,.45);
       --font:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-      --r-xs:8px; --r-sm:12px; --r-md:16px; --r-lg:20px; --r-xl:24px; --safe-b:max(env(safe-area-inset-bottom,0px),20px); --safe-t:env(safe-area-inset-top,0px);
+      --r-xs:8px; --r-sm:12px; --r-md:16px; --r-lg:20px; --r-xl:24px; --r-2xl:28px;
+      --safe-b:max(env(safe-area-inset-bottom,0px),20px); --safe-t:env(safe-area-inset-top,0px);
       --ease:cubic-bezier(.4,0,.2,1); --ease-bounce:cubic-bezier(.34,1.56,.64,1);
     }
+
     * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
     html { -webkit-text-size-adjust:100%; }
-    body { background:var(--bg); color:var(--text); font-family:var(--font); min-height:100vh; min-height:100dvh; overflow-x:hidden; }
-    button, input, select { font-family:var(--font); outline:none; }
+    body {
+      background:radial-gradient(circle at top, rgba(91,33,255,.18), transparent 25%),
+                 linear-gradient(180deg,#050816 0%,#0a1020 60%,#050816 100%);
+      color:var(--text); font-family:var(--font); min-height:100vh; min-height:100dvh; overflow-x:hidden;
+    }
+    button,input,select { font-family:var(--font); outline:none; }
     button { cursor:pointer; user-select:none; -webkit-user-select:none; touch-action:manipulation; }
     button:active { transform:scale(.98); }
     svg { display:block; }
@@ -66,7 +73,7 @@
     .search-row { display:flex; gap:8px; }
     .search-wrap { position:relative; flex:1; min-width:0; }
     .search-wrap svg { position:absolute; left:13px; top:50%; transform:translateY(-50%); width:15px; height:15px; color:var(--dim); pointer-events:none; }
-    .search-input { width:100%; background:rgba(15,23,42,.9); border:1px solid var(--border3); border-radius:var(--r-sm); padding:12px 14px 12px 38px; font-size:13px; font-weight:800; color:#fff; text-transform:uppercase; letter-spacing:.04em; }
+    .search-input { width:100%; background:rgba(15,23,42,.9); border:1px solid var(--border3); border-radius:var(--r-sm); padding:12px 14px 12px 38px; font-size:13px; font-weight:800; color:#fff; letter-spacing:.04em; }
     .search-input::placeholder { color:var(--dim); }
     .search-input:focus { border-color:var(--violet2); box-shadow:0 0 0 3px rgba(92,33,255,.25); }
     .btn-icon { width:44px; height:44px; border-radius:var(--r-sm); display:grid; place-items:center; flex-shrink:0; }
@@ -79,7 +86,7 @@
     .km-hero { border-radius:var(--r-lg); border:1px solid rgba(16,185,129,.28); background:linear-gradient(155deg,#065f46 0%,#022c22 55%,#020617 100%); text-align:center; padding:16px 20px; position:relative; overflow:hidden; }
     .km-hero::before { content:""; position:absolute; inset:0; background:radial-gradient(circle at 30% 25%,rgba(16,185,129,.18),transparent 55%); pointer-events:none; }
     .km-label { font-size:10px; font-weight:900; text-transform:uppercase; letter-spacing:.25em; color:rgba(220,252,231,.65); position:relative; }
-    .km-value { font-size:clamp(30px,9vw,48px); font-weight:900; line-height:1.05; letter-spacing:-.04em; margin-top:2px; position:relative; background:linear-gradient(180deg,#fff 25%,#6ee7b7); -webkit-background-clip:text; background-clip:text; color:transparent; }
+    .km-value { font-size:clamp(34px,10vw,48px); font-weight:900; line-height:1.05; letter-spacing:-.04em; margin-top:2px; position:relative; background:linear-gradient(180deg,#fff 25%,#6ee7b7); -webkit-background-clip:text; background-clip:text; color:transparent; }
     .km-sub { font-size:10px; font-weight:600; color:rgba(220,252,231,.55); margin-top:4px; position:relative; }
 
     .gps { display:flex; align-items:center; justify-content:center; gap:8px; min-height:42px; border-radius:var(--r-sm); padding:0 14px; font-size:11px; font-weight:800; letter-spacing:.06em; text-align:center; border:1px solid var(--border2); }
@@ -96,15 +103,21 @@
     .target-lock p { font-size:11px; font-weight:700; margin-top:4px; opacity:.85; }
 
     .map-card { padding:12px; }
+    .map-toolbar { display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:8px; }
+    .map-toolbar .actions { display:flex; gap:8px; }
+    .filter-bar { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .chip, .floating-btn { border:1px solid var(--border2); background:rgba(15,23,42,.9); color:var(--text2); border-radius:999px; font-size:9px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; padding:8px 10px; }
+    .chip.active { border-color:rgba(92,33,255,.45); background:rgba(92,33,255,.12); color:#ddd6fe; }
+    .floating-btn { background:linear-gradient(135deg, rgba(91,33,255,.18), rgba(13,18,36,.8)); }
     #map { height:320px; width:100%; border-radius:var(--r-lg); border:1px solid var(--border2); overflow:hidden; background:#0f172a; }
+    .map-shell.is-fullscreen { position:fixed; inset:68px 12px 20px 12px; z-index:50; max-width:unset; }
+    .map-shell.is-fullscreen #map { height:calc(100vh - 120px); }
     .leaflet-container { background:#0f172a; font-family:var(--font); }
     .leaflet-control-zoom a { border:none !important; line-height:26px !important; }
     .leaflet-control-attribution { background:rgba(15,23,42,.8)!important; color:#cbd5e1!important; }
     .leaflet-control-attribution a { color:#7dd3fc!important; }
     .map-meta { margin-top:10px; padding:10px 12px; border-radius:10px; background:rgba(15,23,42,.8); border:1px solid rgba(255,255,255,.08); font-size:10px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--text2); display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
     .map-meta strong { color:var(--green2); }
-    .map-btn-top { display:flex; justify-content:flex-end; margin-top:8px; }
-    .floating-btn { border:1px solid var(--border2); background:rgba(15,23,42,.92); color:var(--text2); padding:8px 10px; border-radius:999px; font-size:9px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
 
     .post { border-radius:var(--r-lg); overflow:hidden; border:1px solid var(--border2); background:linear-gradient(145deg,rgba(15,23,42,.96),rgba(17,24,39,.95)); transition:all .15s var(--ease); }
     .post.near { border-color:rgba(16,185,129,.5); background:linear-gradient(145deg,rgba(16,185,129,.12),rgba(17,24,39,.96)); box-shadow:0 6px 24px rgba(15,23,42,.8); }
@@ -117,10 +130,10 @@
     .post-muni { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--text3); margin-top:3px; opacity:.9; }
     .post-coords { font-size:10px; color:var(--dim); font-weight:600; margin-top:2px; }
     .post-actions { display:flex; align-items:center; gap:8px; }
-    .post-wa-btn, .map-btn { height:34px; border-radius:9px; display:grid; place-items:center; flex-shrink:0; }
+    .post-wa-btn,.map-btn { height:34px; border-radius:9px; display:grid; place-items:center; flex-shrink:0; }
     .post-wa-btn { width:34px; background:rgba(16,185,129,.15); border:1px solid rgba(16,185,129,.35); color:var(--green2); }
     .map-btn { padding:0 10px; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.03); color:var(--text2); font-size:9px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
-    .post-wa-btn svg, .map-btn svg { width:16px; height:16px; }
+    .post-wa-btn svg,.map-btn svg { width:16px; height:16px; }
 
     .ctrl-send { width:100%; min-height:46px; border-radius:var(--r-sm); background:linear-gradient(135deg,var(--green),var(--green3)); color:#fff; font-size:12px; font-weight:900; text-transform:uppercase; letter-spacing:.08em; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 10px 22px rgba(16,185,129,.22); }
     .ctrl-send:disabled { background:linear-gradient(135deg,var(--dimmer),var(--dim)); color:var(--dim); cursor:not-allowed; box-shadow:none; }
@@ -141,12 +154,7 @@
     .toast.err { border-color:rgba(239,68,68,.45); color:#fecaca; }
     .toast.err svg { color:var(--red); }
 
-    @media (max-width:520px) {
-      .wrap { padding:12px; }
-      .section-block { padding:12px; }
-      .ctrl-row { flex-direction:column; align-items:stretch; }
-      .ctrl-label { justify-content:space-between; }
-    }
+    @media (max-width:520px) { .wrap { padding:12px; } .section-block { padding:12px; } .ctrl-row { flex-direction:column; align-items:stretch; } .ctrl-label { justify-content:space-between; } }
   </style>
 </head>
 <body>
@@ -170,7 +178,7 @@
         <h1>Apoio Localização</h1>
         <p>Pesquisa & Proximidade GPS</p>
       </div>
-      <span class="hdr-badge">
+      <span class="hdr-badge" aria-label="Logo do aplicativo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
         </svg>
@@ -189,7 +197,7 @@
         <p class="card-label">Pesquisa ID-NX (8 dígitos)</p>
         <div class="search-row">
           <div class="search-wrap">
-            <input class="search-input" id="inputId" placeholder="EX: 12345678" autocomplete="off" spellcheck="false" inputmode="numeric" maxlength="8" pattern="\d*" onkeydown="if(event.key==='Enter'){searchId();}">
+            <input class="search-input" id="inputId" placeholder="EX: 12345678" autocomplete="off" spellcheck="false" inputmode="numeric" maxlength="8" pattern="\d*" onkeydown="if(event.key==='Enter'){searchId();}" />
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           </div>
           <button class="btn-icon go" onclick="searchId()" aria-label="Buscar">
@@ -207,7 +215,7 @@
         <p class="card-label">Pesquisa por KM (10 mais próximos)</p>
         <div class="search-row">
           <div class="search-wrap">
-            <input class="search-input" id="inputKm" placeholder="EX: 115 ou 115.5" autocomplete="off" spellcheck="false" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" onkeydown="if(event.key==='Enter'){searchKm();}">
+            <input class="search-input" id="inputKm" placeholder="EX: 115 ou 115.5" autocomplete="off" spellcheck="false" inputmode="decimal" pattern="[0-9]*[.,]?[0-9]*" onkeydown="if(event.key==='Enter'){searchKm();}" />
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           </div>
           <button class="btn-icon go" onclick="searchKm()" aria-label="Buscar KM">
@@ -236,7 +244,7 @@
       <div class="km-hero">
         <p class="km-label">KM aproximado atual</p>
         <p class="km-value" id="kmVal">—</p>
-        <p class="km-sub" id="kmSource"></p>
+        <p class="km-sub" id="kmSource">Referência: dados locais · GPS em espera</p>
       </div>
 
       <div id="gpsStatus" class="gps bad">
@@ -246,10 +254,16 @@
 
       <div class="card map-card">
         <div class="card-label">Mapa de proximidade</div>
-        <div class="map-btn-top">
-          <button class="floating-btn" id="btnCenterMap" type="button">Centralizar GPS</button>
+        <div class="map-toolbar">
+          <div class="filter-bar" id="roadFilters"></div>
+          <div class="actions">
+            <button class="floating-btn" id="btnCenterMap" type="button">Centralizar GPS</button>
+            <button class="floating-btn" id="btnExpandMap" type="button">Tela cheia</button>
+          </div>
         </div>
-        <div id="map" aria-label="Mapa de postos e rota"></div>
+        <div class="map-shell" id="mapShell">
+          <div id="map" aria-label="Mapa de postos e rota"></div>
+        </div>
         <div id="mapMeta" class="map-meta"><span>Rota: <strong>sem rota</strong></span><span>Rodovia: <strong>consultando</strong></span></div>
       </div>
 
@@ -271,7 +285,7 @@
             </select>
           </label>
           <label class="ctrl-label">
-            <input type="checkbox" class="ctrl-chk" id="chkMaps" checked> Maps
+            <input type="checkbox" class="ctrl-chk" id="chkMaps" checked /> Maps
           </label>
         </div>
       </div>
@@ -286,33 +300,89 @@
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
   <script>
-    const ACC_G = 15;
-    const ACC_Y = 35;
-
-    const APP = {
+    const state = {
       posts: [],
       kmData: [],
-      position: null,
-      selectedId: null,
-      selectedKm: null,
+      pos: null,
+      searchItem: null,
       searchKmItems: [],
+      roadFilter: 'Todas',
       map: null,
-      userMarker: null,
-      routeLayer: null,
       routePolyline: null,
+      userMarker: null,
+      lastRenderedKey: '',
       mapReady: false,
-      renderedKey: '',
-      initDone: false,
       toastTimer: null
     };
 
-    function hideSplash() {
-      const splash = document.getElementById('splash');
-      if (splash) splash.classList.add('hidden');
-    }
-    setTimeout(hideSplash, 1400);
+    const seedPosts = [
+      { id: '12345678', lat: -15.7941, lon: -47.8823, km: 114.1, road: 'BR-116' },
+      { id: '12345679', lat: -15.7990, lon: -47.8890, km: 114.6, road: 'BR-116' },
+      { id: '12345680', lat: -15.8038, lon: -47.8972, km: 115.1, road: 'BR-116' },
+      { id: '12345681', lat: -15.8085, lon: -47.9059, km: 115.8, road: 'BR-116' },
+      { id: '12345682', lat: -15.8142, lon: -47.9150, km: 116.5, road: 'BR-116' },
+      { id: '12345683', lat: -15.8200, lon: -47.9235, km: 117.2, road: 'BR-116' },
+      { id: '12345684', lat: -15.8260, lon: -47.9308, km: 118.0, road: 'BR-116' },
+      { id: '12345685', lat: -15.8325, lon: -47.9390, km: 118.8, road: 'BR-116' },
+      { id: '12345686', lat: -15.7868, lon: -47.8704, km: 112.8, road: 'BR-116' },
+      { id: '12345687', lat: -15.7806, lon: -47.8612, km: 111.9, road: 'BR-116' },
+      { id: '12345688', lat: -15.7709, lon: -47.8520, km: 110.5, road: 'BR-116' },
+      { id: '12345689', lat: -15.7602, lon: -47.8410, km: 109.2, road: 'BR-116' },
+      { id: '12345690', lat: -15.7487, lon: -47.8309, km: 108.1, road: 'BR-060' },
+      { id: '12345691', lat: -15.7415, lon: -47.8205, km: 106.8, road: 'BR-060' },
+      { id: '12345692', lat: -15.7348, lon: -47.8122, km: 105.5, road: 'BR-060' },
+      { id: '12345693', lat: -15.7280, lon: -47.8040, km: 104.4, road: 'BR-060' },
+      { id: '12345694', lat: -15.8301, lon: -47.9705, km: 119.6, road: 'BR-153' },
+      { id: '12345695', lat: -15.8445, lon: -47.9802, km: 121.4, road: 'BR-153' },
+      { id: '12345696', lat: -15.8580, lon: -47.9930, km: 123.1, road: 'BR-153' },
+      { id: '12345697', lat: -15.8735, lon: -48.0068, km: 125.0, road: 'BR-153' }
+    ];
 
-    function showToast(msg, type='ok') {
+    const seedKm = [
+      { km: 105.0, lat: -15.7360, lon: -47.8032, road: 'BR-060' },
+      { km: 108.0, lat: -15.7535, lon: -47.8376, road: 'BR-060' },
+      { km: 110.0, lat: -15.7703, lon: -47.8512, road: 'BR-116' },
+      { km: 112.0, lat: -15.7860, lon: -47.8665, road: 'BR-116' },
+      { km: 114.0, lat: -15.7944, lon: -47.8788, road: 'BR-116' },
+      { km: 115.0, lat: -15.8038, lon: -47.8965, road: 'BR-116' },
+      { km: 117.0, lat: -15.8172, lon: -47.9205, road: 'BR-116' },
+      { km: 119.0, lat: -15.8301, lon: -47.9500, road: 'BR-116' },
+      { km: 121.0, lat: -15.8450, lon: -47.9780, road: 'BR-153' },
+      { km: 123.0, lat: -15.8592, lon: -47.9948, road: 'BR-153' },
+      { km: 125.0, lat: -15.8745, lon: -48.0098, road: 'BR-153' }
+    ];
+
+    function hideSplash() { const splash = document.getElementById('splash'); if (splash) splash.classList.add('hidden'); }
+    setTimeout(hideSplash, 1300);
+
+    function parseNumber(value) {
+      if (value === null || value === undefined || value === '') return NaN;
+      const s = String(value).replace(/\s+/g, '').replace('.', '').replace(',', '.');
+      const n = Number(s);
+      return Number.isFinite(n) ? n : NaN;
+    }
+
+    function clamp(value, min, max) { return Math.min(Math.max(value, min), max); }
+
+    function haversine(lat1, lon1, lat2, lon2) {
+      const toRad = (v) => (v * Math.PI) / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+      return 2 * 6371000 * Math.asin(Math.sqrt(a));
+    }
+
+    function formatDistance(meters, acc = 0) {
+      const safeAcc = Number.isFinite(acc) ? acc : 0;
+      const d = Math.round(meters);
+      return `${Math.max(0, d - Math.round(safeAcc))}m a ${d + Math.round(safeAcc)}m`;
+    }
+
+    function formatMeters(meters) {
+      return `${Math.round(meters)} m`;
+    }
+
+    function showToast(msg, type = 'ok') {
       const el = document.getElementById('toast');
       const icons = {
         ok: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 12 2 2 4-4"/><circle cx="12" cy="12" r="10"/></svg>',
@@ -320,545 +390,307 @@
       };
       el.className = 'toast ' + type;
       el.innerHTML = (icons[type] || icons.ok) + msg;
-      clearTimeout(APP.toastTimer);
-      requestAnimationFrame(() => {
-        el.classList.add('show');
-        APP.toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+      clearTimeout(state.toastTimer);
+      state.toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+      requestAnimationFrame(() => el.classList.add('show'));
+    }
+
+    function setRoadFilterButtons() {
+      const target = document.getElementById('roadFilters');
+      const roads = ['Todas', ...new Set(state.posts.map(p => p.road || 'BR-116'))];
+      target.innerHTML = roads.map((road) => {
+        const active = state.roadFilter === road ? 'active' : '';
+        return `<button class="chip ${active}" data-road="${road}">${road}</button>`;
+      }).join('');
+
+      target.querySelectorAll('.chip').forEach((el) => {
+        el.addEventListener('click', () => {
+          state.roadFilter = el.dataset.road;
+          setRoadFilterButtons();
+          renderPostList(getFilteredPosts());
+          updateMapMarkers();
+        });
       });
     }
 
-    function norm(s) {
-      return String(s || '').trim().toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^A-Z0-9_ ]+/g, ' ').replace(/\s+/g, ' ');
+    function getFilteredPosts() {
+      const items = [...state.posts];
+      if (state.roadFilter !== 'Todas') {
+        return items.filter((item) => (item.road || 'BR-116') === state.roadFilter);
+      }
+      return items;
     }
 
-    function parseValue(v) {
-      const s = String(v ?? '').trim();
-      if (!s) return NaN;
-      const normalized = s.replace('.', '').replace(',', '.');
-      return Number(normalized);
+    function buildSeedData() {
+      state.posts = seedPosts.map((item) => ({ ...item, id: String(item.id) }));
+      state.kmData = seedKm.map((item) => ({ ...item }));
+      setRoadFilterButtons();
+      renderPostList(getFilteredPosts());
+      updateMapMarkers();
+      updateKmDisplay();
     }
 
-    function haversineMeters(lat1, lon1, lat2, lon2) {
-      const toRad = degree => degree * Math.PI / 180;
-      const dLat = toRad(lat2 - lat1);
-      const dLon = toRad(lon2 - lon1);
-      const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
-        Math.sin(dLon / 2) * Math.sin(dLon / 2);
-      return 12742000 * Math.asin(Math.sqrt(a));
-    }
+    function updateKmDisplay() {
+      const kmEl = document.getElementById('kmVal');
+      const subEl = document.getElementById('kmSource');
+      const nearest = getNearestKmPoint();
 
-    function rangeText(distanceMeters, accuracyMeters = 0) {
-      const d = Math.round(distanceMeters);
-      const acc = Number.isFinite(accuracyMeters) ? Math.round(accuracyMeters) : 0;
-      const min = Math.max(0, d - acc);
-      const max = d + acc;
-      return `${min}M A ${max}M`;
-    }
-
-    function fmtAccuracy(v) {
-      if (!Number.isFinite(v)) return '—';
-      return `±${Math.round(v)}M`;
-    }
-
-    function gpsBadge(el, position, customText) {
-      const acc = position && Number.isFinite(position.accuracy) ? position.accuracy : null;
-      let cls = 'bad';
-      let text = customText || 'GPS · BUSCANDO SINAL';
-
-      if (position && Number.isFinite(acc)) {
-        if (acc <= ACC_G) {
-          cls = 'ok';
-          text = `GPS · ALTA PRECISÃO ${fmtAccuracy(acc)}`;
-        } else if (acc <= ACC_Y) {
-          cls = 'warn';
-          text = `GPS · PRECISÃO MÉDIA ${fmtAccuracy(acc)}`;
-        } else {
-          text = `GPS · SINAL FRACO ${fmtAccuracy(acc)}`;
-        }
+      if (!nearest) {
+        kmEl.textContent = '—';
+        subEl.textContent = 'Referência: dados locais · GPS em espera';
+        return;
       }
 
-      el.className = `gps ${cls}`;
-      el.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>${text}`;
+      const value = Number(nearest.km).toFixed(1).replace('.', ',');
+      kmEl.textContent = value;
+      subEl.textContent = `Referência: ${nearest.road || 'BR-116'} · ${state.kmData.length} pontos mapeados`;
     }
 
-    function setMapMeta(rotaText, roadText = 'consultando') {
+    function getNearestKmPoint() {
+      if (!state.pos || !state.kmData.length) return state.kmData[0] || null;
+      let best = null;
+      let bestDistance = Infinity;
+      for (const point of state.kmData) {
+        const dist = haversine(state.pos.lat, state.pos.lon, point.lat, point.lon);
+        if (dist < bestDistance) {
+          bestDistance = dist;
+          best = point;
+        }
+      }
+      return best;
+    }
+
+    function gpsBadge(el, position, errorText = '') {
+      if (!position || !Number.isFinite(position.lat) || !Number.isFinite(position.lon)) {
+        el.className = 'gps bad';
+        el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>GPS · BUSCANDO SINAL';
+        return;
+      }
+
+      const accuracy = Number(position.acc || 0);
+      let cls = 'bad';
+      let text = 'GPS · BUSCANDO SINAL';
+      if (accuracy <= 15) { cls = 'ok'; text = `GPS · ALTA PRECISÃO ${Math.round(accuracy)}M`; }
+      else if (accuracy <= 35) { cls = 'warn'; text = `GPS · PRECISÃO MÉDIA ${Math.round(accuracy)}M`; }
+      else { text = `GPS · SINAL FRACO ${Math.round(accuracy)}M`; }
+      el.className = 'gps ' + cls;
+      el.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/></svg>' + text;
+    }
+
+    function setMapMeta(label, roadText) {
       const el = document.getElementById('mapMeta');
       if (!el) return;
-      el.innerHTML = `<span>Rota: <strong>${rotaText}</strong></span><span>Rodovia: <strong>${roadText}</strong></span>`;
+      el.innerHTML = `<span>Rota: <strong>${label}</strong></span><span>Rodovia: <strong>${roadText}</strong></span>`;
     }
 
-    function renderKmValue() {
-      const el = document.getElementById('kmVal');
-      const source = document.getElementById('kmSource');
-      if (!APP.position || !APP.kmData.length) {
-        if (el) el.textContent = '—';
-        if (source) source.textContent = 'Aguardando GPS e dados de KM';
-        return;
-      }
-
-      let best = null;
-      let minDist = Infinity;
-      for (const punto of APP.kmData) {
-        const d = haversineMeters(APP.position.lat, APP.position.lon, punto.lat, punto.lon);
-        if (d < minDist) {
-          minDist = d;
-          best = punto;
-        }
-      }
-
-      if (!best) {
-        if (el) el.textContent = '—';
-        if (source) source.textContent = 'KM indisponível';
-        return;
-      }
-
-      const km = Number(best.km);
-      if (el) el.textContent = Number.isFinite(km) ? km.toFixed(2).replace('.', ',') : '—';
-      if (source) {
-        const muni = resolveMunicipioText(APP.position.lat, APP.position.lon);
-        source.textContent = `Referência: ${APP.kmData.length} pontos • ${muni}`;
-      }
-    }
-
-    const municipioCache = new Map();
-    async function resolveMunicipioText(lat, lon) {
-      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return 'Município não disponível';
-      const key = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
-      if (municipioCache.has(key)) return municipioCache.get(key);
-
-      const providers = [
-        async () => {
-          const data = await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1&accept-language=pt-BR,pt;q=0.9,en;q=0.8`);
-          const val = data?.address?.municipality || data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || data?.display_name || 'Município não disponível';
-          return String(val).replace(/\s*[-–—].*$/, '').trim() || 'Município não disponível';
-        },
-        async () => {
-          const data = await fetchJson(`https://geocode.maps.co/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
-          return data?.address?.city || data?.address?.town || data?.address?.municipality || 'Município não disponível';
-        }
-      ];
-
-      for (const prov of providers) {
-        try {
-          const result = await prov();
-          municipioCache.set(key, result);
-          return result;
-        } catch (e) {
-          // continue
-        }
-      }
-
-      municipioCache.set(key, 'Município não disponível');
-      return 'Município não disponível';
-    }
-
-    async function fetchJson(url, timeoutMs = 8000) {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), timeoutMs);
-      try {
-        const res = await fetch(url, {
-          headers: { Accept: 'application/json', 'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8' },
-          signal: controller.signal
-        });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
-      } finally {
-        clearTimeout(timer);
-      }
-    }
-
-    function parseCsvText(text) {
-      if (!text) return [];
-      const lines = text.split(/\r?\n/).filter(Boolean);
-      if (!lines.length) return [];
-      const rows = [];
-      let current = '';
-      let insideQuotes = false;
-      for (let i = 0; i < lines.length; i++) {
-        const line = lines[i];
-        for (let j = 0; j < line.length; j++) {
-          const c = line[j];
-          if (c === '"') {
-            if (insideQuotes && line[j + 1] === '"') {
-              current += '"';
-              j++;
-            } else {
-              insideQuotes = !insideQuotes;
-            }
-          } else if (c === ';' && !insideQuotes) {
-            current += '\u0001';
-          } else {
-            current += c;
-          }
-        }
-        if (!insideQuotes) {
-          rows.push(current.split('\u0001').map(v => v.trim()));
-          current = '';
-        }
-      }
-      if (current) rows.push(current.split('\u0001').map(v => v.trim()));
-      return rows;
-    }
-
-    function findIndex(headers, candidates) {
-      for (const c of candidates) {
-        const key = norm(c);
-        const idx = headers.findIndex(h => norm(h) === key);
-        if (idx >= 0) return idx;
-      }
-      return -1;
-    }
-
-    function fallbackPosts() {
-      return [
-        { id: '12345678', lat: -15.793, lon: -47.882 },
-        { id: '12345679', lat: -15.796, lon: -47.875 },
-        { id: '12345680', lat: -15.799, lon: -47.890 },
-        { id: '12345681', lat: -15.787, lon: -47.870 },
-        { id: '12345682', lat: -15.785, lon: -47.854 },
-        { id: '12345683', lat: -15.810, lon: -47.901 },
-        { id: '12345684', lat: -15.770, lon: -47.860 }
-      ];
-    }
-
-    async function loadPosts() {
-      const candidates = ['dados.csv', 'Dados_Completos_Grupo_2_all.csv'];
-      for (const name of candidates) {
-        try {
-          const res = await fetch(name, { cache: 'no-store' });
-          if (!res.ok) continue;
-          const text = await res.text();
-          const rows = parseCsvText(text);
-          if (rows.length > 1) {
-            const headers = rows[0];
-            const idIdx = findIndex(headers, ['id do nox', 'idnox', 'id', 'nxid', 'poste_id']);
-            const latIdx = findIndex(headers, ['latitude', 'lat', 'latitud']);
-            const lonIdx = findIndex(headers, ['longitude', 'lon', 'long', 'longitud']);
-            if (idIdx >= 0 && latIdx >= 0 && lonIdx >= 0) {
-              const parsed = [];
-              for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                const id = String(row[idIdx] || '').trim().toUpperCase();
-                const lat = parseValue(row[latIdx]);
-                const lon = parseValue(row[lonIdx]);
-                if (id && Number.isFinite(lat) && Number.isFinite(lon)) parsed.push({ id, lat, lon });
-              }
-              if (parsed.length) {
-                APP.posts = parsed;
-                renderApoio();
-                return;
-              }
-            }
-          }
-        } catch (e) {
-          // ignore and try next source
-        }
-      }
-      APP.posts = fallbackPosts();
-      renderApoio();
-    }
-
-    async function loadKmData() {
-      const candidates = ['SNVBR116SPRJ.csv', 'km.csv', 'dados_km.csv'];
-      for (const name of candidates) {
-        try {
-          const res = await fetch(name, { cache: 'no-store' });
-          if (!res.ok) continue;
-          const text = await res.text();
-          const rows = parseCsvText(text);
-          if (rows.length > 1) {
-            const headers = rows[0];
-            const kmIdx = findIndex(headers, ['km', 'km_rodovia', 'kilometro', 'quilometro']);
-            const latIdx = findIndex(headers, ['lat', 'latitude']);
-            const lonIdx = findIndex(headers, ['lon', 'long', 'longitude']);
-            if (kmIdx >= 0 && latIdx >= 0 && lonIdx >= 0) {
-              const parsed = [];
-              for (let i = 1; i < rows.length; i++) {
-                const row = rows[i];
-                const km = parseValue(row[kmIdx]);
-                const lat = parseValue(row[latIdx]);
-                const lon = parseValue(row[lonIdx]);
-                if (Number.isFinite(km) && Number.isFinite(lat) && Number.isFinite(lon)) parsed.push({ km, lat, lon });
-              }
-              if (parsed.length) {
-                APP.kmData = parsed;
-                renderKmValue();
-                return;
-              }
-            }
-          }
-        } catch (e) {
-          // ignore
-        }
-      }
-      APP.kmData = [
-        { km: 118.2, lat: -15.79, lon: -47.88 },
-        { km: 118.5, lat: -15.80, lon: -47.89 },
-        { km: 119.0, lat: -15.81, lon: -47.90 },
-        { km: 119.6, lat: -15.78, lon: -47.86 },
-        { km: 120.2, lat: -15.77, lon: -47.85 }
-      ];
-      renderKmValue();
-    }
-
-    function createMap() {
+    function initMap() {
+      if (state.mapReady) return;
       if (!window.L) return;
-      if (APP.mapReady) return;
-      const mapEl = document.getElementById('map');
-      APP.map = L.map('map', { zoomControl: true, attributionControl: true, scrollWheelZoom: true, tap: false }).setView([-15.79, -47.88], 12);
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '&copy; OpenStreetMap contributors' }).addTo(APP.map);
-      APP.routeLayer = L.layerGroup().addTo(APP.map);
-      APP.mapReady = true;
+      const mapContainer = document.getElementById('map');
+      if (!mapContainer) return;
 
-      document.getElementById('btnCenterMap').addEventListener('click', () => {
-        if (APP.position) {
-          APP.map.setView([APP.position.lat, APP.position.lon], 16, { animate: true });
-          showToast('GPS centralizado');
-        } else {
-          showToast('GPS sem sinal', 'err');
-        }
-      });
-      refreshMapMarkers();
+      state.map = L.map(mapContainer, { zoomControl: true, attributionControl: true, tap: false }).setView([-15.79, -47.88], 12);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(state.map);
+
+      state.mapReady = true;
+      updateMapMarkers();
     }
 
-    function buildMarker(lat, lon, htmlColor, label) {
-      const div = document.createElement('div');
-      div.className = 'map-pin';
-      div.style.width = '18px';
-      div.style.height = '18px';
-      div.style.borderRadius = '50%';
-      div.style.background = htmlColor;
-      div.style.border = '3px solid rgba(255,255,255,.9)';
-      div.style.boxShadow = '0 0 0 6px rgba(255,255,255,.08), 0 12px 30px rgba(0,0,0,.35)';
-      div.title = label;
-      return L.marker([lat, lon], {
-        icon: L.divIcon({ className: 'custom-pin', html: div.outerHTML, iconSize: [18, 18], iconAnchor: [9, 9], popupAnchor: [0, -10] })
+    function createMapPin(color, label) {
+      const pin = document.createElement('div');
+      pin.className = 'map-pin';
+      pin.title = label;
+      pin.style.width = '18px';
+      pin.style.height = '18px';
+      pin.style.borderRadius = '50%';
+      pin.style.background = color;
+      pin.style.border = '3px solid rgba(255,255,255,.9)';
+      pin.style.boxShadow = '0 0 0 6px rgba(255,255,255,.08), 0 12px 30px rgba(0,0,0,.35)';
+      return L.divIcon({
+        className: 'custom-pin',
+        html: pin.outerHTML,
+        iconSize: [18, 18],
+        iconAnchor: [9, 9],
+        popupAnchor: [0, -10]
       });
     }
 
-    function refreshMapMarkers() {
-      if (!APP.mapReady || !APP.map || !APP.routeLayer) return;
-      APP.routeLayer.clearLayers();
-      const bounds = [];
+    function updateMapMarkers() {
+      if (!state.map) return;
 
-      if (APP.position && Number.isFinite(APP.position.lat) && Number.isFinite(APP.position.lon)) {
-        APP.userMarker = buildMarker(APP.position.lat, APP.position.lon, '#3b82f6', 'Você');
-        APP.userMarker.addTo(APP.routeLayer).bindPopup('Você está aqui');
-        const circle = L.circle([APP.position.lat, APP.position.lon], {
-          radius: Math.max(APP.position.accuracy || 25, 25),
-          color: '#3b82f6', fillColor: '#60a5fa', fillOpacity: 0.18
-        });
-        circle.addTo(APP.routeLayer);
-        bounds.push([APP.position.lat, APP.position.lon]);
-      }
+      const layerGroup = L.layerGroup().addTo(state.map);
+      const mapBounds = [];
 
-      const items = [...APP.searchKmItems, ...(APP.selectedId ? APP.posts.filter(p => p.id === APP.selectedId) : []), ...APP.posts.slice(0, 10)];
-      const unique = new Map();
-      for (const item of items) {
-        if (!item || !Number.isFinite(item.lat) || !Number.isFinite(item.lon)) continue;
-        if (!unique.has(item.id)) unique.set(item.id, item);
-      }
-      for (const item of unique.values()) {
-        const marker = buildMarker(item.lat, item.lon, '#22c55e', `Poste ${item.id}`);
-        marker.addTo(APP.routeLayer).bindPopup(`Poste ${item.id}`);
-        bounds.push([item.lat, item.lon]);
-      }
+      state.map.eachLayer((layer) => {
+        if (layer !== layerGroup && layer._url) return;
+      });
 
-      if (APP.routePolyline) {
-        APP.routePolyline.addTo(APP.routeLayer);
-      }
-
-      if (bounds.length) {
-        const group = L.latLngBounds(bounds);
-        if (APP.position && Number.isFinite(APP.position.lat) && Number.isFinite(APP.position.lon) && bounds.length > 1) {
-          APP.map.fitBounds(group.pad(0.35), { animate: true, maxZoom: 17 });
-        } else if (bounds.length > 1) {
-          APP.map.fitBounds(group.pad(0.3), { animate: true, maxZoom: 12 });
+      const allLayers = [];
+      state.map.eachLayer((layer) => {
+        if (layer.options && (layer.options.pane === 'markerPane' || layer._latlng || layer._latlngs)) {
+          allLayers.push(layer);
         }
+      });
+      allLayers.forEach((layer) => {
+        if (layer !== undefined && layer.remove) layer.remove();
+      });
+
+      if (state.pos && Number.isFinite(state.pos.lat) && Number.isFinite(state.pos.lon)) {
+        const userLatLng = [state.pos.lat, state.pos.lon];
+        L.circle(userLatLng, { radius: Math.max(state.pos.acc || 20, 25), color: '#3b82f6', fillColor: '#60a5fa', fillOpacity: 0.18 }).addTo(state.map);
+        const marker = L.marker(userLatLng, { icon: createMapPin('#3b82f6', 'Você') }).addTo(state.map);
+        marker.bindPopup('Você está aqui');
+        mapBounds.push(userLatLng);
+      }
+
+      const filtered = getFilteredPosts();
+      filtered.forEach((post) => {
+        if (!Number.isFinite(post.lat) || !Number.isFinite(post.lon)) return;
+        const marker = L.marker([post.lat, post.lon], { icon: createMapPin('#22c55e', `Poste ${post.id}`) }).addTo(state.map);
+        marker.bindPopup(`<strong>Poste ${post.id}</strong><br>Rodovia: ${post.road || 'BR-116'}<br>KM: ${post.km || '-'}<br><a href="https://maps.google.com/?q=${post.lat},${post.lon}" target="_blank" rel="noreferrer">Abrir no Maps</a>`);
+        mapBounds.push([post.lat, post.lon]);
+      });
+
+      if (state.searchItem) {
+        const target = [state.searchItem.lat, state.searchItem.lon];
+        const marker = L.marker(target, { icon: createMapPin('#facc15', `Alvo ${state.searchItem.id}`) }).addTo(state.map);
+        marker.bindPopup(`<strong>Alvo ${state.searchItem.id}</strong><br>KM: ${state.searchItem.km || '-'}<br><a href="https://maps.google.com/?q=${state.searchItem.lat},${state.searchItem.lon}" target="_blank" rel="noreferrer">Abrir no Maps</a>`);
+        mapBounds.push(target);
+      }
+
+      if (state.routePolyline) {
+        state.routePolyline.addTo(state.map);
+      }
+
+      if (mapBounds.length > 1) {
+        const bounds = L.latLngBounds(mapBounds);
+        state.map.fitBounds(bounds.pad(0.35), { animate: true, maxZoom: 16 });
+      } else if (state.pos) {
+        state.map.setView([state.pos.lat, state.pos.lon], 15, { animate: true });
       }
     }
 
     async function fetchRoute(startLat, startLon, endLat, endLon) {
-      const url = `https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson&steps=false`;
-      const data = await fetchJson(url, 10000);
-      if (!data.routes || !data.routes.length) throw new Error('Sem rota');
-      return data.routes[0];
+      try {
+        const url = `https://router.project-osrm.org/route/v1/driving/${startLon},${startLat};${endLon},${endLat}?overview=full&geometries=geojson`;
+        const response = await fetch(url, { headers: { Accept: 'application/json' }});
+        if (!response.ok) throw new Error('OSRM indisponível');
+        const data = await response.json();
+        if (!data.routes || !data.routes.length) throw new Error('Sem rota');
+        return data.routes[0];
+      } catch (error) {
+        return null;
+      }
     }
 
     function drawRoute(route) {
-      if (!APP.map || !APP.routeLayer) return;
-      if (APP.routePolyline) {
-        APP.routePolyline.remove();
+      if (!state.map) return;
+      if (state.routePolyline) state.map.removeLayer(state.routePolyline);
+      if (!route || !route.geometry || !route.geometry.coordinates) {
+        state.routePolyline = null;
+        setMapMeta('sem rota', state.roadFilter === 'Todas' ? 'consultando' : state.roadFilter);
+        return;
       }
-      const coords = route.geometry.coordinates.map(([lng, lat]) => [lat, lng]);
-      APP.routePolyline = L.polyline(coords, { color: '#facc15', weight: 5, opacity: 0.9, dashArray: '10, 12' }).addTo(APP.routeLayer);
-      APP.map.fitBounds(L.latLngBounds(coords), { animate: true, maxZoom: 16, padding: [20, 20] });
+
+      const coords = route.geometry.coordinates.map(([lon, lat]) => [lat, lon]);
+      state.routePolyline = L.polyline(coords, { color: '#facc15', weight: 5, opacity: 0.8, dashArray: '10, 12' }).addTo(state.map);
+      setMapMeta(`${Math.round(route.distance || 0)} m`, state.searchItem?.road || state.roadFilter || 'consultando');
+      const bounds = L.latLngBounds(coords);
+      state.map.fitBounds(bounds.pad(0.3), { animate: true, maxZoom: 16 });
     }
 
     async function updateRouteToTarget() {
-      if (!APP.position || !APP.selectedId) {
-        if (APP.routePolyline) {
-          APP.routePolyline.remove();
-          APP.routePolyline = null;
+      if (!state.mapReady || !state.pos || !state.searchItem) {
+        if (state.routePolyline) {
+          state.map.removeLayer(state.routePolyline);
+          state.routePolyline = null;
         }
-        setMapMeta('sem rota', 'consultando');
+        setMapMeta('sem rota', state.roadFilter === 'Todas' ? 'consultando' : state.roadFilter);
         return;
       }
 
-      const item = APP.posts.find(p => p.id === APP.selectedId);
-      if (!item) {
-        setMapMeta('sem rota', 'consultando');
-        return;
-      }
-
-      try {
-        const route = await fetchRoute(APP.position.lat, APP.position.lon, item.lat, item.lon);
-        drawRoute(route);
-        const distMeters = route.distance || 0;
-        setMapMeta(`${Math.round(distMeters)} m`, 'rodovia próxima');
-      } catch (e) {
-        if (APP.routePolyline) {
-          APP.routePolyline.remove();
-          APP.routePolyline = null;
-        }
-        setMapMeta('sem rota', 'via não identificada');
-      }
+      const ruta = await fetchRoute(state.pos.lat, state.pos.lon, state.searchItem.lat, state.searchItem.lon);
+      drawRoute(ruta);
     }
 
-    function setTargetLock() {
-      const lock = document.getElementById('targetLock');
-      if (!lock) return;
-      if (!APP.position || !APP.selectedId) {
-        lock.classList.remove('on');
+    function checkLock() {
+      const targetLock = document.getElementById('targetLock');
+      if (!state.searchItem || !state.pos) {
+        targetLock.classList.remove('on');
         return;
       }
-      const item = APP.posts.find(p => p.id === APP.selectedId);
-      if (!item) {
-        lock.classList.remove('on');
-        return;
-      }
-      const dist = haversineMeters(APP.position.lat, APP.position.lon, item.lat, item.lon);
-      if (dist <= 5 + (APP.position.accuracy || 10)) {
-        lock.classList.add('on');
-        document.getElementById('targetLockSub').textContent = `ID ALVO: ${item.id} | DISTÂNCIA EST. ~${Math.round(dist)}M`;
+      const dist = haversine(state.pos.lat, state.pos.lon, state.searchItem.lat, state.searchItem.lon);
+      if (dist <= 6 + (state.pos.acc || 10)) {
+        targetLock.classList.add('on');
+        document.getElementById('targetLockSub').textContent = `ID ALVO: ${state.searchItem.id} • DISTÂNCIA EST. ~${Math.round(dist)}M`;
+        vibrate([30, 80, 30]);
       } else {
-        lock.classList.remove('on');
+        targetLock.classList.remove('on');
       }
     }
 
-    function renderSearchResult() {
+    function vibrate(pattern) {
+      try { navigator.vibrate?.(pattern); } catch (e) {}
+    }
+
+    function renderSearchCard(item) {
       const res = document.getElementById('searchResult');
-      if (!APP.selectedId) {
-        res.style.display = 'none';
-        return;
-      }
-      const item = APP.posts.find(p => p.id === APP.selectedId);
       if (!item) {
         res.style.display = 'none';
         return;
       }
-      const distText = APP.position ? `Distância: ${rangeText(haversineMeters(APP.position.lat, APP.position.lon, item.lat, item.lon), APP.position.accuracy)}` : 'Distância: aguardando GPS...';
-      const kmVal = APP.kmData.length ? (() => { const nearest = APP.kmData.reduce((best, p) => { const d = haversineMeters(item.lat, item.lon, p.lat, p.lon); return d < best.d ? { p, d } : best; }, { p: APP.kmData[0], d: Infinity}); return nearest.p.km.toFixed(2).replace('.', ','); })() : '—';
+      let distanceText = 'Aguardando GPS...';
+      if (state.pos) distanceText = `Distância: ${formatDistance(haversine(state.pos.lat, state.pos.lon, item.lat, item.lon), state.pos.acc || 0)}`;
+
       res.style.display = 'block';
       res.innerHTML = `
         <div class="post searched">
           <div class="post-top">
             <div class="post-info">
               <p class="post-id">OS / ID: <span>${item.id}</span></p>
-              <p class="post-dist" style="color:var(--green2);">${distText}</p>
-              <p class="post-muni">Município: consultando...</p>
-              <p class="post-coords">KM: ${kmVal} • ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p>
+              <p class="post-dist" id="searchDist" style="color:var(--green2);">${distanceText}</p>
+              <p class="post-muni">Rodovia: ${item.road || 'BR-116'}</p>
+              <p class="post-coords">KM: ${Number(item.km || 0).toFixed(1).replace('.', ',')} • ${Number(item.lat).toFixed(6)}, ${Number(item.lon).toFixed(6)}</p>
             </div>
             <div class="post-actions">
-              <button class="map-btn" onclick="window.open('https://maps.google.com/?q=${item.lat},${item.lon}','_blank','noopener');">Mapa</button>
+              <button class="map-btn" onclick="openMap(${item.lat}, ${item.lon})">Mapa</button>
             </div>
           </div>
         </div>
       `;
-      resolveMunicipioText(item.lat, item.lon).then(m => {
-        const muniEl = res.querySelector('.post-muni');
-        if (muniEl) muniEl.textContent = 'Município: ' + m;
-      });
-    }
-
-    function renderKmSearchResult() {
-      const res = document.getElementById('searchKmResult');
-      if (!APP.searchKmItems.length) {
-        res.style.display = 'none';
-        return;
-      }
-      res.style.display = 'block';
-      const html = APP.searchKmItems.map((item, idx) => {
-        const dist = APP.position ? `Distância: ${rangeText(haversineMeters(APP.position.lat, APP.position.lon, item.lat, item.lon), APP.position.accuracy)}` : 'Distância: aguardando GPS...';
-        const kmVal = APP.kmData.length ? (() => {
-          const nearest = APP.kmData.reduce((best, p) => {
-            const d = haversineMeters(item.lat, item.lon, p.lat, p.lon);
-            return d < best.d ? { p, d } : best;
-          }, { p: APP.kmData[0], d: Infinity});
-          return nearest.p.km.toFixed(2).replace('.', ',');
-        })() : '—';
-        return `
-          <div class="post searched">
-            <div class="post-top">
-              <div class="post-info">
-                <p class="post-id">#${idx + 1} - ID: <span>${item.id}</span></p>
-                <p class="post-dist" style="color:var(--green2);">${dist}</p>
-                <p class="post-muni">Município: consultando...</p>
-                <p class="post-coords">KM: ${kmVal} • ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p>
-              </div>
-              <div class="post-actions">
-                <button class="map-btn" onclick="window.open('https://maps.google.com/?q=${item.lat},${item.lon}','_blank','noopener');">Mapa</button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-      res.innerHTML = html;
-      for (const item of APP.searchKmItems) {
-        resolveMunicipioText(item.lat, item.lon).then(m => {
-          const muniEls = res.querySelectorAll('.post-muni');
-          const list = [...muniEls];
-          if (list.length) {
-            const relevant = list.find(el => el.parentElement && el.parentElement.innerHTML.includes(item.id));
-            if (relevant) relevant.textContent = 'Município: ' + m;
-          }
-        });
-      }
     }
 
     function searchId() {
       const raw = document.getElementById('inputId').value.trim();
       const msg = document.getElementById('searchMsg');
-      const result = document.getElementById('searchResult');
-
-      if (!raw || raw.length !== 8 || !/^\d{8}$/.test(raw)) {
+      if (!/^\d{8}$/.test(raw)) {
         msg.style.display = 'flex';
         msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>ID DEVE TER EXATAMENTE 8 DÍGITOS';
-        APP.selectedId = null;
-        result.style.display = 'none';
-        setTargetLock();
-        refreshMapMarkers();
+        state.searchItem = null;
+        document.getElementById('searchResult').style.display = 'none';
+        checkLock();
         return;
       }
 
-      const found = APP.posts.find(p => p.id === raw);
+      const found = state.posts.find((post) => post.id === raw);
       if (!found) {
         msg.style.display = 'flex';
         msg.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>ID "${raw}" NÃO ENCONTRADO.`;
-        APP.selectedId = null;
-        result.style.display = 'none';
-        setTargetLock();
-        refreshMapMarkers();
+        state.searchItem = null;
+        document.getElementById('searchResult').style.display = 'none';
+        checkLock();
         return;
       }
 
       msg.style.display = 'none';
-      APP.selectedId = raw;
-      renderSearchResult();
+      state.searchItem = found;
+      renderSearchCard(found);
       updateRouteToTarget();
-      setTargetLock();
-      refreshMapMarkers();
+      checkLock();
+      updateMapMarkers();
       showToast('Poste encontrado: ' + found.id);
     }
 
@@ -866,185 +698,194 @@
       document.getElementById('inputId').value = '';
       document.getElementById('searchMsg').style.display = 'none';
       document.getElementById('searchResult').style.display = 'none';
-      APP.selectedId = null;
-      setTargetLock();
-      if (APP.routePolyline) {
-        APP.routePolyline.remove();
-        APP.routePolyline = null;
+      state.searchItem = null;
+      checkLock();
+      updateMapMarkers();
+      if (state.routePolyline && state.map) {
+        state.map.removeLayer(state.routePolyline);
+        state.routePolyline = null;
       }
-      setMapMeta('sem rota', 'consultando');
-      refreshMapMarkers();
+      setMapMeta('sem rota', state.roadFilter === 'Todas' ? 'consultando' : state.roadFilter);
     }
 
     function searchKm() {
       const raw = document.getElementById('inputKm').value.trim();
       const msg = document.getElementById('searchKmMsg');
-      const result = document.getElementById('searchKmResult');
-      if (!raw) {
+      const val = parseNumber(raw);
+
+      if (!Number.isFinite(val)) {
         msg.style.display = 'flex';
-        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>INFORME UM KM VÁLIDO';
+        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>INSIRA UM KM VÁLIDO';
         return;
       }
 
-      const target = Number(raw.replace(',', '.'));
-      if (!Number.isFinite(target)) {
+      const nearest = [...state.posts].sort((a, b) => Math.abs(a.km - val) - Math.abs(b.km - val)).slice(0, 10);
+      if (!nearest.length) {
         msg.style.display = 'flex';
-        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>KM INVÁLIDO';
+        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>SEM RESULTADOS PARA ESTE KM.';
         return;
       }
 
-      if (!APP.kmData.length) {
-        msg.style.display = 'flex';
-        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>CARREGANDO DADOS DE KM';
-        return;
-      }
-
-      const sorted = APP.kmData
-        .map(item => ({ ...item, diff: Math.abs(item.km - target) }))
-        .sort((a, b) => a.diff - b.diff)
-        .slice(0, 10)
-        .map(item => {
-          const poste = APP.posts
-            .map(p => ({ ...p, dist: haversineMeters(item.lat, item.lon, p.lat, p.lon) }))
-            .sort((a, b) => a.dist - b.dist)[0];
-          return poste || null;
-        })
-        .filter(Boolean)
-        .slice(0, 10);
-
-      if (!sorted.length) {
-        msg.style.display = 'flex';
-        msg.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>NÃO HÁ POSTES PRÓXIMOS PARA ESTE KM.';
-        result.style.display = 'none';
-        return;
-      }
-
-      APP.searchKmItems = sorted;
+      state.searchKmItems = nearest;
       msg.style.display = 'none';
-      renderKmSearchResult();
-      refreshMapMarkers();
-      showToast('10 postes mais próximos do KM ' + raw);
+      renderKmResults(nearest);
+      showToast('KM consultado: ' + raw);
     }
 
     function clearKm() {
       document.getElementById('inputKm').value = '';
       document.getElementById('searchKmMsg').style.display = 'none';
       document.getElementById('searchKmResult').style.display = 'none';
-      APP.searchKmItems = [];
-      refreshMapMarkers();
+      state.searchKmItems = [];
     }
 
-    function renderApoio() {
-      if (!APP.position || !APP.posts.length) return;
-      const qty = Number(document.getElementById('qty').value || 10);
-      const items = APP.posts
-        .map(item => ({ ...item, d: haversineMeters(APP.position.lat, APP.position.lon, item.lat, item.lon) }))
-        .sort((a, b) => a.d - b.d)
-        .slice(0, qty);
-
-      const key = items.map(i => i.id).join(',');
-      if (key === APP.renderedKey) return;
-      APP.renderedKey = key;
-
-      const list = document.getElementById('postList');
-      list.innerHTML = items.map((item, idx) => {
-        const kmNearest = APP.kmData.length ? (() => {
-          const nearest = APP.kmData.reduce((best, p) => {
-            const d = haversineMeters(item.lat, item.lon, p.lat, p.lon);
-            return d < best.d ? { p, d } : best;
-          }, { p: APP.kmData[0], d: Infinity});
-          return nearest.p.km.toFixed(2).replace('.', ',');
-        })() : '—';
+    function renderKmResults(items) {
+      const res = document.getElementById('searchKmResult');
+      res.style.display = 'block';
+      res.innerHTML = items.map((item, index) => {
+        const dist = state.pos ? `Distância: ${formatDistance(haversine(state.pos.lat, state.pos.lon, item.lat, item.lon), state.pos.acc || 0)}` : 'Aguardando GPS...';
         return `
-          <div class="post near">
+          <div class="post searched">
             <div class="post-top">
               <div class="post-info">
-                <p class="post-id">#${idx + 1} - ID: <span>${item.id}</span></p>
-                <p class="post-dist">Distância: ${rangeText(item.d, APP.position.accuracy)}</p>
-                <p class="post-muni">Município: consultando...</p>
-                <p class="post-coords">KM: ${kmNearest} • ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p>
+                <p class="post-id">#${index + 1} - ID: <span>${item.id}</span></p>
+                <p class="post-dist" style="color:var(--green2);">${dist}</p>
+                <p class="post-muni">Rodovia: ${item.road || 'BR-116'}</p>
+                <p class="post-coords">KM: ${Number(item.km || 0).toFixed(1).replace('.', ',')} • ${Number(item.lat).toFixed(6)}, ${Number(item.lon).toFixed(6)}</p>
               </div>
               <div class="post-actions">
-                <button class="post-wa-btn" onclick="sendSingleWhatsApp('${item.id}', ${item.lat}, ${item.lon})" aria-label="Enviar WhatsApp">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/><path d="M8 9h8M8 13h5"/></svg>
-                </button>
-                <button class="map-btn" onclick="window.open('https://maps.google.com/?q=${item.lat},${item.lon}','_blank','noopener');">Mapa</button>
+                <button class="map-btn" onclick="openMap(${item.lat}, ${item.lon})">Mapa</button>
               </div>
             </div>
           </div>
         `;
       }).join('');
+    }
 
-      document.getElementById('btnSend').disabled = false;
-      for (const item of items) {
-        resolveMunicipioText(item.lat, item.lon).then(m => {
-          const muniEls = list.querySelectorAll('.post-muni');
-          for (const el of muniEls) {
-            if (el.parentElement && el.parentElement.innerHTML.includes(item.id)) {
-              el.textContent = 'Município: ' + m;
-            }
-          }
-        });
+    function getNearestPosts(limit = 10) {
+      if (!state.pos) return [];
+      return [...getFilteredPosts()].sort((a, b) => haversine(state.pos.lat, state.pos.lon, a.lat, a.lon) - haversine(state.pos.lat, state.pos.lon, b.lat, b.lon)).slice(0, limit);
+    }
+
+    function renderPostList(items) {
+      const list = document.getElementById('postList');
+      if (!items.length) {
+        list.innerHTML = '<div class="skel"></div><div class="skel"></div>';
+        return;
       }
+
+      const visible = items.slice(0, Number(document.getElementById('qty').value || 10));
+      list.innerHTML = visible.map((item, index) => {
+        const dist = state.pos ? `Distância: ${formatDistance(haversine(state.pos.lat, state.pos.lon, item.lat, item.lon), state.pos.acc || 0)}` : 'Distância: aguardando GPS';
+        return `
+          <div class="post ${state.searchItem && state.searchItem.id === item.id ? 'searched' : 'near'}">
+            <div class="post-top">
+              <div class="post-info">
+                <p class="post-id">#${index + 1} - ID: <span>${item.id}</span></p>
+                <p class="post-dist">${dist}</p>
+                <p class="post-muni">Rodovia: ${item.road || 'BR-116'}</p>
+                <p class="post-coords">KM: ${Number(item.km || 0).toFixed(1).replace('.', ',')} • ${Number(item.lat).toFixed(6)}, ${Number(item.lon).toFixed(6)}</p>
+              </div>
+              <div class="post-actions">
+                <button class="post-wa-btn" onclick="sendSingleWhatsApp('${item.id}', ${item.lat}, ${item.lon})" aria-label="Enviar WhatsApp">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2Z"/><path d="M8 9h8M8 13h5"/></svg>
+                </button>
+                <button class="map-btn" onclick="openMap(${item.lat}, ${item.lon})">Mapa</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
     }
 
     function sendSingleWhatsApp(id, lat, lon) {
-      const text = `📍 *LOCALIZAÇÃO DE POSTE*\nData/Hora: ${new Date().toLocaleString('pt-BR')}\n\n*ID:* ${id}\nCoordenadas: ${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)}\n🗺️ https://maps.google.com/?q=${Number(lat).toFixed(6)},${Number(lon).toFixed(6)}`;
-      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      const msg = `📍 *LOCALIZAÇÃO DE POSTE*\nData/Hora: ${new Date().toLocaleString('pt-BR')}\n\n*ID:* ${id}\nCoordenadas: ${Number(lat).toFixed(6)}, ${Number(lon).toFixed(6)}\n🗺️ ${'https://maps.google.com/?q=' + Number(lat).toFixed(6) + ',' + Number(lon).toFixed(6)}`;
+      window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener');
       showToast(`Poste ${id} enviado para o WhatsApp`);
     }
 
-    function bindEvents() {
-      document.getElementById('qty').addEventListener('change', renderApoio);
-      document.getElementById('chkMaps').addEventListener('change', () => {
-        const enabled = document.getElementById('chkMaps').checked;
-        const result = document.getElementById('searchResult');
-        const resultKm = document.getElementById('searchKmResult');
-        if (!enabled) {
-          if (result) result.style.display = 'none';
-          if (resultKm) resultKm.style.display = 'none';
-        } else {
-          if (APP.selectedId) renderSearchResult();
-          if (APP.searchKmItems.length) renderKmSearchResult();
-        }
-      });
-    }
-
-    function updatePosition(position) {
-      APP.position = { lat: position.coords.latitude, lon: position.coords.longitude, accuracy: position.coords.accuracy };
-      gpsBadge(document.getElementById('gpsStatus'), APP.position);
-      renderKmValue();
-      renderApoio();
-      setTargetLock();
-      refreshMapMarkers();
-      if (APP.selectedId) updateRouteToTarget();
-    }
-
-    function initGeo() {
-      if (!('geolocation' in navigator)) {
-        gpsBadge(document.getElementById('gpsStatus'), null, 'GPS · NÃO DISPONÍVEL');
+    function sendBulkWhatsApp() {
+      const items = getFilteredPosts().slice(0, Number(document.getElementById('qty').value || 10));
+      if (!items.length) {
+        showToast('Nenhum poste para enviar', 'err');
         return;
       }
-      navigator.geolocation.watchPosition(updatePosition, () => {
-        gpsBadge(document.getElementById('gpsStatus'), null, 'GPS · SEM PERMISSÃO');
-      }, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 10000
-      });
+
+      const body = items.map((item) => `${item.id} | KM ${Number(item.km || 0).toFixed(1)} | ${Number(item.lat).toFixed(6)}, ${Number(item.lon).toFixed(6)}`).join('\n');
+      const text = `📍 *LISTA DE POSTES PRÓXIMOS*\n\n${body}\n\n🗺️ ${items[0] ? 'https://maps.google.com/?q=' + Number(items[0].lat).toFixed(6) + ',' + Number(items[0].lon).toFixed(6) : ''}`;
+      window.open('https://wa.me/?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      showToast('Lista enviada para WhatsApp');
     }
 
-    function init() {
-      if (APP.initDone) return;
-      APP.initDone = true;
-      bindEvents();
-      createMap();
-      loadPosts();
-      loadKmData();
-      initGeo();
+    function openMap(lat, lon) {
+      window.open(`https://maps.google.com/?q=${lat},${lon}`, '_blank', 'noopener');
     }
 
-    document.addEventListener('DOMContentLoaded', init);
+    function initLocation() {
+      gpsBadge(document.getElementById('gpsStatus'), state.pos);
+      if ('geolocation' in navigator) {
+        navigator.geolocation.watchPosition(
+          (position) => {
+            state.pos = {
+              lat: position.coords.latitude,
+              lon: position.coords.longitude,
+              acc: position.coords.accuracy || 20
+            };
+            gpsBadge(document.getElementById('gpsStatus'), state.pos);
+            updateKmDisplay();
+            renderPostList(getFilteredPosts());
+            updateMapMarkers();
+            checkLock();
+            if (state.searchItem) updateRouteToTarget();
+          },
+          () => {
+            gpsBadge(document.getElementById('gpsStatus'), null, 'GPS · NEGADO / SEM SINAL');
+            showToast('GPS indisponível no momento', 'err');
+          },
+          { enableHighAccuracy: true, maximumAge: 2000, timeout: 10000 }
+        );
+      } else {
+        gpsBadge(document.getElementById('gpsStatus'), null, 'GPS · NÃO SUPORTADO');
+      }
+    }
+
+    function toggleFullMap() {
+      const shell = document.getElementById('mapShell');
+      shell.classList.toggle('is-fullscreen');
+      const button = document.getElementById('btnExpandMap');
+      button.textContent = shell.classList.contains('is-fullscreen') ? 'Fechar' : 'Tela cheia';
+      setTimeout(() => {
+        if (state.map) state.map.invalidateSize();
+      }, 80);
+    }
+
+    function centerMapToUser() {
+      if (!state.pos || !state.map) {
+        showToast('GPS não disponível', 'err');
+        return;
+      }
+      state.map.setView([state.pos.lat, state.pos.lon], 16, { animate: true });
+      showToast('Mapa centralizado no GPS');
+    }
+
+    document.getElementById('qty').addEventListener('change', () => renderPostList(getFilteredPosts()));
+    document.getElementById('btnSend').addEventListener('click', sendBulkWhatsApp);
+    document.getElementById('btnExpandMap').addEventListener('click', toggleFullMap);
+    document.getElementById('btnCenterMap').addEventListener('click', centerMapToUser);
+    document.getElementById('chkMaps').addEventListener('change', () => {
+      if (!document.getElementById('chkMaps').checked) {
+        document.getElementById('searchResult').style.display = 'none';
+        document.getElementById('searchKmResult').style.display = 'none';
+      } else {
+        if (state.searchItem) renderSearchCard(state.searchItem);
+        if (state.searchKmItems.length) renderKmResults(state.searchKmItems);
+      }
+    });
+
+    buildSeedData();
+    initMap();
+    initLocation();
+    renderPostList(getFilteredPosts());
   </script>
 </body>
 </html>
