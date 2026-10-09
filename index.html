@@ -47,6 +47,19 @@ button{cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:man
 button:active{transform:scale(.98)}
 svg{display:block}
 
+.splash{position:fixed;inset:0;z-index:999;background:radial-gradient(circle at top, rgba(92,33,255,.28), transparent 42%), linear-gradient(180deg,#050816 0%,#0b1020 35%,#050816 100%);display:flex;align-items:center;justify-content:center;opacity:1;visibility:visible;transition:opacity .55s ease,visibility .55s ease}
+.splash.hidden{opacity:0;visibility:hidden}
+.splash-box{text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px;padding:24px 18px;animation:splashIn .55s var(--ease-bounce)}
+@keyframes splashIn{0%{opacity:0;transform:translateY(14px) scale(.96)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.splash-logo{width:82px;height:82px;display:grid;place-items:center;border-radius:24px;color:#fff;background:linear-gradient(135deg,var(--violet),var(--violet2));box-shadow:0 18px 32px rgba(91,33,255,.38)}
+.splash-logo svg{width:38px;height:38px}
+.splash-title{font-size:20px;font-weight:900;letter-spacing:.16em;text-transform:uppercase}
+.splash-sub{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.22em;color:var(--text3)}
+.splash-bar{width:min(220px,70vw);height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
+.splash-bar::before{content:"";display:block;height:100%;width:38%;background:linear-gradient(90deg,var(--green),var(--green2),var(--accent));border-radius:inherit;animation:loading 1.25s ease-in-out infinite alternate}
+@keyframes loading{0%{transform:translateX(-20%)}100%{transform:translateX(150%)}}
+.splash-skip{margin-top:6px;background:rgba(255,255,255,.04);border:1px solid var(--border2);color:var(--text2);padding:8px 14px;border-radius:999px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.16em}
+
 .hdr{position:sticky;top:0;z-index:20;border-bottom:1px solid var(--border2);background:rgba(5,10,24,.92);backdrop-filter:blur(18px);padding:0 16px;padding-top:var(--safe-t)}
 .hdr-in{max-width:680px;margin:0 auto;display:flex;align-items:center;gap:12px;height:58px}
 .hdr-title{flex:1;min-width:0}
@@ -108,8 +121,11 @@ svg{display:block}
 .post-dist{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--muted);margin-top:3px}
 .post-muni{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-top:3px;opacity:.9}
 .post-coords{font-size:10px;color:var(--dim);font-weight:600;margin-top:2px}
-.post-wa-btn{width:34px;height:34px;border-radius:9px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.35);color:var(--green2);display:grid;place-items:center;flex-shrink:0}
-.post-wa-btn svg{width:16px;height:16px}
+.post-actions{display:flex;align-items:center;gap:8px}
+.post-wa-btn,.map-btn{height:34px;border-radius:9px;display:grid;place-items:center;flex-shrink:0}
+.post-wa-btn{width:34px;background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.35);color:var(--green2)}
+.map-btn{padding:0 10px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.03);color:var(--text2);font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.post-wa-btn svg,.map-btn svg{width:16px;height:16px}
 
 .ctrl-send{width:100%;min-height:46px;border-radius:var(--r-sm);background:linear-gradient(135deg,var(--green),var(--green3));color:#fff;font-size:12px;font-weight:900;text-transform:uppercase;letter-spacing:.07em;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 3px 18px rgba(16,185,129,.35)}
 .ctrl-send:disabled{background:linear-gradient(135deg,var(--dimmer),var(--dim));color:var(--dim);cursor:not-allowed;box-shadow:none}
@@ -139,6 +155,19 @@ svg{display:block}
 </style>
 </head>
 <body>
+<div id="splash" class="splash" role="dialog" aria-live="polite">
+  <div class="splash-box">
+    <div class="splash-logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/>
+      </svg>
+    </div>
+    <div class="splash-title">Apoio Localização</div>
+    <div class="splash-sub">GPS • Proximidade • Poste</div>
+    <div class="splash-bar"></div>
+    <button class="splash-skip" onclick="hideSplash()">Pular</button>
+  </div>
+</div>
 
 <header class="hdr">
   <div class="hdr-in">
@@ -261,6 +290,12 @@ const fmtAcc=a=>!Number.isFinite(a)?'—':`±${Math.round(a)}M`;
 const nowBR=()=>new Date().toLocaleString('pt-BR').toUpperCase();
 function findCol(h,cs){const m=h.map(norm);for(const c of cs){const i=m.indexOf(norm(c));if(i>=0)return i}return-1}
 function vibrate(ms){try{navigator.vibrate?.(ms)}catch{}}
+
+function hideSplash(){
+  const splash = document.getElementById('splash');
+  if (splash) splash.classList.add('hidden');
+}
+setTimeout(hideSplash, 1400);
 
 const municipioCache = new Map();
 const municipioPending = new Map();
@@ -488,11 +523,15 @@ function renderSearch(){
   if(pos) dt='Distância: '+range(hav(pos.lat,pos.lon,searchItem.lat,searchItem.lon),pos.acc);
   const exactKm = findPostExactKm(searchItem);
   res.style.display='block';
-  res.innerHTML=`<div class="post searched"><div class="post-top"><div class="post-info"><p class="post-id">OS / ID: <span>${searchItem.id}</span></p><p class="post-dist" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p><p class="post-dist" id="srch-dist">${dt}</p><p class="post-muni" id="muni-search">Município: consultando...</p><p class="post-coords">Coordenadas: ${searchItem.lat.toFixed(6)}, ${searchItem.lon.toFixed(6)}</p></div><button class="post-wa-btn" onclick="sendSingleWhatsApp('${searchItem.id}', ${searchItem.lat}, ${searchItem.lon})" title="Enviar por WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/><path d="M8.5 8.5c.6-.7 1.6-1.1 2.7-1.1 2.1 0 3.7 1.5 3.7 3.7 0 2.6-2.7 3.7-3.9 3.7h-.1c-.2 0-.4 0-.6-.1L8 15.5l.4-1.2c-.7-.9-1.1-2.1-1.1-3.2 0-.7.1-1.4.5-2.1Z"/></svg></button></div></div>`;
+  res.innerHTML=`<div class="post searched"><div class="post-top"><div class="post-info"><p class="post-id">OS / ID: <span>${searchItem.id}</span></p><p class="post-dist" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p><p class="post-dist" id="srch-dist">${dt}</p><p class="post-muni" id="muni-search">Município: consultando...</p><p class="post-coords">Coordenadas: ${searchItem.lat.toFixed(6)}, ${searchItem.lon.toFixed(6)}</p></div><div class="post-actions"><button class="map-btn" onclick="openMap(${searchItem.lat}, ${searchItem.lon})">Mapa</button><button class="post-wa-btn" onclick="sendSingleWhatsApp('${searchItem.id}', ${searchItem.lat}, ${searchItem.lon})" title="Enviar por WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/><path d="M8.5 8.5c.6-.7 1.6-1.1 2.7-1.1 2.1 0 3.7 1.5 3.7 3.7 0 2.6-2.7 3.7-3.9 3.7h-.1c-.2 0-.4 0-.6-.1L8 15.5l.4-1.2c-.7-.9-1.1-2.1-1.1-3.2 0-.7.1-1.4.5-2.1Z"/></svg></button></div></div></div>`;
   if (searchItem) {
     resolveMunicipio(searchItem.lat, searchItem.lon).then(m => { const el=document.getElementById('muni-search'); if (el) el.textContent = 'Município: ' + m; });
   }
   checkLock();
+}
+
+function openMap(lat, lon){
+  window.open(`https://maps.google.com/?q=${lat},${lon}`, '_blank', 'noopener');
 }
 
 function searchKm(){
@@ -541,7 +580,7 @@ function renderSearchKm(){
   searchKmItems.forEach((item,idx)=>{
     const dt = pos ? 'Distância: '+range(hav(pos.lat,pos.lon,item.lat,item.lon),pos.acc) : 'Aguardando GPS...';
     const exactKm = findPostExactKm(item);
-    html += `<div class="post searched"><div class="post-top"><div class="post-info"><p class="post-id">#${idx+1} - ID: <span>${item.id}</span></p><p class="post-dist" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p><p class="post-dist" id="srch-km-dist-${idx}">${dt}</p><p class="post-muni" id="muni-${item.id}">Município: consultando...</p><p class="post-coords">Coordenadas: ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p></div><button class="post-wa-btn" onclick="sendSingleWhatsApp('${item.id}', ${item.lat}, ${item.lon})" title="Enviar por WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/><path d="M8.5 8.5c.6-.7 1.6-1.1 2.7-1.1 2.1 0 3.7 1.5 3.7 3.7 0 2.6-2.7 3.7-3.9 3.7h-.1c-.2 0-.4 0-.6-.1L8 15.5l.4-1.2c-.7-.9-1.1-2.1-1.1-3.2 0-.7.1-1.4.5-2.1Z"/></svg></button></div></div>`;
+    html += `<div class="post searched"><div class="post-top"><div class="post-info"><p class="post-id">#${idx+1} - ID: <span>${item.id}</span></p><p class="post-dist" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p><p class="post-dist" id="srch-km-dist-${idx}">${dt}</p><p class="post-muni" id="muni-${item.id}">Município: consultando...</p><p class="post-coords">Coordenadas: ${item.lat.toFixed(6)}, ${item.lon.toFixed(6)}</p></div><div class="post-actions"><button class="map-btn" onclick="openMap(${item.lat}, ${item.lon})">Mapa</button><button class="post-wa-btn" onclick="sendSingleWhatsApp('${item.id}', ${item.lat}, ${item.lon})" title="Enviar por WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/><path d="M8.5 8.5c.6-.7 1.6-1.1 2.7-1.1 2.1 0 3.7 1.5 3.7 3.7 0 2.6-2.7 3.7-3.9 3.7h-.1c-.2 0-.4 0-.6-.1L8 15.5l.4-1.2c-.7-.9-1.1-2.1-1.1-3.2 0-.7.1-1.4.5-2.1Z"/></svg></button></div></div></div>`;
     resolveMunicipio(item.lat, item.lon).then(m => { const el=document.getElementById('muni-'+item.id); if (el) el.textContent = 'Município: ' + m; });
   });
   res.innerHTML = html;
@@ -585,10 +624,14 @@ function renderApoio(){
   renderedKey = key;
   list.innerHTML = items.map((o,i)=>{
     const exactKm = findPostExactKm(o);
-    return `<div class="post near"><div class="post-top"><div class="post-info"><p class="post-id">#${i+1} - ID: <span>${o.id}</span></p><p class="post-dist" id="dist-${i}">Distância: ${range(o.d,pos.acc)}</p><p class="post-dist" id="km-exato-${i}" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p><p class="post-coords">Coordenadas: ${o.lat.toFixed(6)}, ${o.lon.toFixed(6)}</p></div><button class="post-wa-btn" onclick="sendSingleWhatsApp('${o.id}', ${o.lat}, ${o.lon})" title="Enviar por WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/><path d="M8.5 8.5c.6-.7 1.6-1.1 2.7-1.1 2.1 0 3.7 1.5 3.7 3.7 0 2.6-2.7 3.7-3.9 3.7h-.1c-.2 0-.4 0-.6-.1L8 15.5l.4-1.2c-.7-.9-1.1-2.1-1.1-3.2 0-.7.1-1.4.5-2.1Z"/></svg></button></div></div>`;
+    const cidade = pos ? 'Município: consultando...' : 'Município: não disponível';
+    return `<div class="post near"><div class="post-top"><div class="post-info"><p class="post-id">#${i+1} - ID: <span>${o.id}</span></p><p class="post-dist" id="dist-${i}">Distância: ${range(o.d,pos.acc)}</p><p class="post-dist" id="km-exato-${i}" style="color:var(--green2);font-weight:900;margin-top:2px;">KM Exato: ${exactKm}</p><p class="post-muni" id="muni-list-${o.id}">${cidade}</p><p class="post-coords">Coordenadas: ${o.lat.toFixed(6)}, ${o.lon.toFixed(6)}</p></div><div class="post-actions"><button class="map-btn" onclick="openMap(${o.lat}, ${o.lon})">Mapa</button><button class="post-wa-btn" onclick="sendSingleWhatsApp('${o.id}', ${o.lat}, ${o.lon})" title="Enviar por WhatsApp"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5Z"/><path d="M8.5 8.5c.6-.7 1.6-1.1 2.7-1.1 2.1 0 3.7 1.5 3.7 3.7 0 2.6-2.7 3.7-3.9 3.7h-.1c-.2 0-.4 0-.6-.1L8 15.5l.4-1.2c-.7-.9-1.1-2.1-1.1-3.2 0-.7.1-1.4.5-2.1Z"/></svg></button></div></div></div>`;
   }).join('');
 
   document.getElementById('btnSend').disabled=false;
+  items.forEach(o => {
+    resolveMunicipio(o.lat, o.lon).then(m => { const el=document.getElementById('muni-list-'+o.id); if (el) el.textContent = 'Município: ' + m; });
+  });
 }
 
 function initEvents(){
