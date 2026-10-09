@@ -510,33 +510,76 @@ function findCol(h,cs){const m=h.map(norm);for(const c of cs){const i=m.indexOf(
 function vibrate(ms){try{navigator.vibrate?.(ms)}catch{}}
 
 const municipioCache = new Map();
-async function resolveMunicipio(lat, lon) {
-  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return 'Município não disponível';
-  const key = `${Number(lat).toFixed(4)},${Number(lon).toFixed(4)}`;
-  if (municipioCache.has(key)) return municipioCache.get(key);
 
-  try {
-    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1&accept-language=pt-BR`;
-    const r = await fetch(url, { headers: { 'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8' } });
-    if (!r.ok) throw new Error('nominatim');
-    const data = await r.json();
-    const addr = data?.address || {};
-    const nome = addr.municipality || addr.city || addr.town || addr.village || addr.county || addr.state || 'Região';
-    const label = String(nome || 'Região').trim() || 'Região';
-    municipioCache.set(key, label);
-    return label;
-  } catch {
-    const fallback = 'Município não disponível';
-    municipioCache.set(key, fallback);
-    return fallback;
-  }
+async function fetchJson(url, headers = {}) {
+  const res = await fetch(url, {
+    headers: {
+      Accept: 'application/json',
+      'Accept-Language': 'pt-BR,pt;q=0.9,en;q=0.8',
+      ...headers
+    }
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
 }
 
-function hydrateMunicipioTargets(){
+function normalizeMunicipio(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return '';
+  const cleaned = raw.replace(/\s*[-–—].*$/, '').trim();
+  return cleaned || raw;
+}
+
+async function resolveMunicipio(lat, lon) {
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return 'Município não disponível';
+  const key = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
+  if (municipioCache.has(key)) return municipioCache.get(key);
+
+  const providers = [
+    async () => {
+      const data = await fetchJson(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&localityLanguage=pt`);
+      return normalizeMunicipio(data?.locality || data?.city || data?.principalSubdivision || data?.countryName || '');
+    },
+    async () => {
+      const data = await fetchJson(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=10&addressdetails=1&accept-language=pt-BR`);
+      return normalizeMunicipio(data?.address?.municipality || data?.address?.city || data?.address?.town || data?.address?.village || data?.address?.county || data?.address?.state || '');
+    },
+    async () => {
+      const data = await fetchJson(`https://geocode.maps.co/reverse?lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}`);
+      return normalizeMunicipio(data?.address?.city || data?.address?.town || data?.address?.municipality || data?.address?.county || data?.address?.state || data?.address?.road || '');
+    }
+  ];
+
+  for (const provider of providers) {
+    try {
+      const nome = await provider();
+      if (nome) {
+        municipioCache.set(key, nome);
+        return nome;
+      }
+    } catch (e) {}
+  }
+
+  const fallback = 'Município não disponível';
+  municipioCache.set(key, fallback);
+  return fallback;
+}
+
+function hydrateMunicipioTargets() {
   document.querySelectorAll('[data-muni-lat]').forEach(async (el) => {
     const lat = Number(el.dataset.muniLat);
     const lon = Number(el.dataset.muniLon);
-    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      el.textContent = 'Município: não disponível';
+      return;
+    }
+
+    const key = `${Number(lat).toFixed(5)},${Number(lon).toFixed(5)}`;
+    if (municipioCache.has(key)) {
+      el.textContent = `Município: ${municipioCache.get(key)}`;
+      return;
+    }
+
     const nome = await resolveMunicipio(lat, lon);
     el.textContent = `Município: ${nome}`;
   });
@@ -660,7 +703,6 @@ function initApoio(){
 
 function searchId(){
   const raw=document.getElementById('inputId').value.trim();
-  const term=norm(raw);
   const msg=document.getElementById('searchMsg'),
         res=document.getElementById('searchResult');
 
